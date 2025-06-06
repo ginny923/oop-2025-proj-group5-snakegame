@@ -267,6 +267,7 @@ class SnakeGame:
             self.boost_remaining = BOOST_DURATION
             self.fps = self.base_fps + BOOST_FPS_INC
     
+    
     def save_score(self, name, score, level):
         filename = f"scores_level{level}.txt"
         scores = self.load_scores(level, full=True)  # ← 這裡要有縮排
