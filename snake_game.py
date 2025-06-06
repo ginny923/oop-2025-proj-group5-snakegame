@@ -1,0 +1,386 @@
+import sys
+import random
+import pygame
+
+"""
+Snake Game (Pygame) – 難度 + 隨機加速道具 + 隨機邊界傳送
+=============================================================
+功能總覽
+---------
+* **三段難度**：
+  1. 普通
+  2. 障礙物定時移動
+  3. 障礙與食物皆定時移動
+* **隨機加速道具**（閃電⚡）：吃到後 N 秒內速度提升
+* **隨機邊界傳送**：撞牆不 Game‑Over，而是隨機出現在任一邊界
+* 其他：得分顯示、頭尾互換、身體截斷、加速逐漸遞增等
+
+測試環境：pygame 2.5.2、Python ≥3.10
+跑法：
+```bash
+pip install pygame
+python snake_game.py
+```
+"""
+
+# ────────────────────────────────────────────────────────────────────
+# 全域參數
+# ────────────────────────────────────────────────────────────────────
+CELL_SIZE         = 15
+GRID_W, GRID_H    = 50, 50
+SCOREBAR_H        = 40
+FPS_BASE          = 8
+OBSTACLE_COUNT    = 25
+INITIAL_FOOD      = 3
+NEW_FOOD_EVENT_MS = 2500
+BOOST_EVENT_MS    = 10000          # 新閃電道具產生間隔(ms)
+BOOST_DURATION    = 450            # 加速持續 frame 數（依 FPS 計）
+BOOST_FPS_INC     = 4
+
+# 難度 (障礙刷新 ms, 食物刷新 ms)
+DIFFICULTY_SETTINGS = {
+    1: (0,     0),
+    2: (4000,  0),
+    3: (3000, 3000),
+}
+
+speed_increment   = True
+randomized_start  = True
+
+WINDOW_W = CELL_SIZE * GRID_W
+WINDOW_H = CELL_SIZE * GRID_H + SCOREBAR_H
+
+# 色彩
+C_BG       = (30, 30, 30)
+C_GRID     = (50, 50, 50)
+C_BOUND    = (200, 200, 200)
+C_SNAKE    = (0, 220, 0)
+C_FOOD     = (240, 30, 30)
+C_OBST     = (120, 120, 120)
+C_BOOST    = (255, 215, 0)
+C_TEXT     = (255, 255, 255)
+C_GAMEOVER = (255, 80, 80)
+C_MENU     = (180, 180, 180)
+
+DIRS = {
+    pygame.K_w: (0, -1), pygame.K_UP: (0, -1),
+    pygame.K_s: (0, 1),  pygame.K_DOWN: (0, 1),
+    pygame.K_a: (-1, 0), pygame.K_LEFT: (-1, 0),
+    pygame.K_d: (1, 0),  pygame.K_RIGHT: (1, 0),
+}
+
+# 自定義事件
+SPAWN_FOOD     = pygame.USEREVENT + 1
+MOVE_OBSTACLES = pygame.USEREVENT + 2
+MOVE_FOODS     = pygame.USEREVENT + 3
+SPAWN_BOOST    = pygame.USEREVENT + 4
+
+# ────────────────────────────────────────────────────────────────────
+# 遊戲類別
+# ────────────────────────────────────────────────────────────────────
+class SnakeGame:
+    def __init__(self):
+        pygame.init()
+        self.screen = pygame.display.set_mode((WINDOW_W, WINDOW_H))
+        pygame.display.set_caption("Snake Game – Plus Mode")
+        self.clock = pygame.time.Clock()
+        self.font  = pygame.font.SysFont("consolas", 20)
+
+        # 難度選擇 → 設定計時器
+        self.difficulty = self.choose_difficulty()
+        self.player_name = self.get_player_name()
+        obst_ms, food_ms = DIFFICULTY_SETTINGS[self.difficulty]
+        if obst_ms:
+            pygame.time.set_timer(MOVE_OBSTACLES, obst_ms)
+        if food_ms:
+            pygame.time.set_timer(MOVE_FOODS, food_ms)
+
+        pygame.time.set_timer(SPAWN_FOOD, NEW_FOOD_EVENT_MS)
+        pygame.time.set_timer(SPAWN_BOOST, BOOST_EVENT_MS)
+        self.reset()
+
+    # ────────────────────────────────────────────────
+    # 選單
+    # ────────────────────────────────────────────────
+    def get_player_name(self):
+        name = ""
+        asking = True
+        prompt = self.font.render("Enter Your Name:", True, C_TEXT)
+        while asking:
+            self.screen.fill(C_BG)
+            self.screen.blit(prompt, (WINDOW_W//3, WINDOW_H//2 - 30))
+            input_txt = self.font.render(name + "_", True, C_TEXT)
+            self.screen.blit(input_txt, (WINDOW_W//3, WINDOW_H//2))
+            pygame.display.flip()
+            for e in pygame.event.get():
+                if e.type == pygame.QUIT:
+                    pygame.quit(); sys.exit()
+                if e.type == pygame.KEYDOWN:
+                    if e.key == pygame.K_RETURN and name.strip():
+                        return name.strip()[:10]
+                    elif e.key == pygame.K_BACKSPACE:
+                        name = name[:-1]
+                    else:
+                        if len(name) < 10 and e.unicode.isprintable():
+                            name += e.unicode
+
+
+    def choose_difficulty(self):
+        title = self.font.render("Select Difficulty", True, C_MENU)
+        opts  = ["Level 1", "Level 2 ", "Level 3"]
+        while True:
+            for e in pygame.event.get():
+                if e.type == pygame.QUIT:
+                    pygame.quit(); sys.exit()
+                if e.type == pygame.KEYDOWN:
+                    if e.key in (pygame.K_1, pygame.K_KP1): return 1
+                    if e.key in (pygame.K_2, pygame.K_KP2): return 2
+                    if e.key in (pygame.K_3, pygame.K_KP3): return 3
+            self.screen.fill(C_BG)
+            self.screen.blit(title, ((WINDOW_W-title.get_width())//2, 80))
+            for i, txt in enumerate(opts):
+                label = self.font.render(txt, True, C_MENU)
+                self.screen.blit(label, (WINDOW_W//2-110, 150+i*40))
+            pygame.display.flip(); self.clock.tick(15)
+
+    # ────────────────────────────────────────────────
+    # 初始化 / 重開
+    # ────────────────────────────────────────────────
+    def reset(self):
+        # 起始蛇
+        if randomized_start:
+            head = (random.randint(5, GRID_W-6), random.randint(5, GRID_H-6))
+            dir_idx = random.choice(list(DIRS.values()))
+        else:
+            head, dir_idx = (GRID_W//2, GRID_H//2), (1, 0)
+        self.direction = dir_idx
+        self.snake = [head, (head[0]-dir_idx[0], head[1]-dir_idx[1])]
+        self.pending_growth = 0
+        self.game_over = False
+        self.age = 0
+
+        # 障礙、食物、加速
+        self.obstacles = set()
+        while len(self.obstacles) < OBSTACLE_COUNT:
+            p = (random.randint(0, GRID_W-1), random.randint(0, GRID_H-1))
+            if p not in self.snake: self.obstacles.add(p)
+
+        self.food = set(); self.boosts = set()
+        while len(self.food) < INITIAL_FOOD: self.spawn_food()
+
+        # 速度控制
+        self.base_fps = FPS_BASE
+        self.fps = FPS_BASE
+        self.boost_remaining = 0  # frame 計數
+
+    # ────────────────────────────────────────────────
+    # 主迴圈
+    # ────────────────────────────────────────────────
+    def run(self):
+        while True:
+            self.handle_events()
+            if not self.game_over:
+                self.update()
+            self.render()
+            self.clock.tick(self.fps)
+
+    # ────────────────────────────────────────────────
+    # 事件處理
+    # ────────────────────────────────────────────────
+    def handle_events(self):
+        for e in pygame.event.get():
+            if e.type == pygame.QUIT:
+                pygame.quit(); sys.exit()
+            if e.type == pygame.KEYDOWN:
+                if e.key == pygame.K_ESCAPE:
+                    pygame.quit(); sys.exit()
+                if e.key in DIRS:
+                    nd = DIRS[e.key]
+                    if (nd[0] != -self.direction[0] or nd[1] != -self.direction[1]):
+                        self.direction = nd
+                if self.game_over and e.key == pygame.K_r:
+                    self.reset()
+
+            if e.type == SPAWN_FOOD and not self.game_over:
+                self.spawn_food()
+            if e.type == SPAWN_BOOST and not self.game_over and len(self.boosts) < 1:
+                self.spawn_boost()
+            if e.type == MOVE_OBSTACLES and not self.game_over:
+                self.relocate_obstacles()
+            if e.type == MOVE_FOODS and not self.game_over:
+                self.relocate_foods()
+
+    # ────────────────────────────────────────────────
+    # 核心更新
+    # ────────────────────────────────────────────────
+    def update(self):
+        # FPS 自增
+        self.age += 1
+        if speed_increment and self.age % 150 == 0:
+            self.base_fps += 1
+            if self.boost_remaining == 0:
+                self.fps = self.base_fps
+
+        # Boost 時間減少
+        if self.boost_remaining > 0:
+            self.boost_remaining -= 1
+            if self.boost_remaining == 0:
+                self.fps = self.base_fps
+
+        # 計算下一格
+        hx, hy = self.snake[0]
+        dx, dy = self.direction
+        nx, ny = hx+dx, hy+dy
+
+        # 邊界處理：隨機傳送
+        if not (0 <= nx < GRID_W and 0 <= ny < GRID_H):
+            nx, ny = self.random_edge_position()
+
+        new_head = (nx, ny)
+
+        # 碰撞
+        if new_head in self.obstacles:
+            self.game_over = True; return
+        if new_head in self.snake:
+            idx = self.snake.index(new_head)
+            self.snake = self.snake[idx:]
+
+        # 移動蛇
+        self.snake.insert(0, new_head)
+        if self.pending_growth:
+            self.pending_growth -= 1
+        else:
+            self.snake.pop()
+
+        # 食物
+        if new_head in self.food:
+            self.food.remove(new_head)
+            self.pending_growth += 1
+            self.snake.reverse()
+            if len(self.snake) >= 2:
+                hx, hy = self.snake[0]; nx, ny = self.snake[1]
+                self.direction = (hx-nx, hy-ny)
+
+        # 加速道具
+        if new_head in self.boosts:
+            self.boosts.remove(new_head)
+            self.boost_remaining = BOOST_DURATION
+            self.fps = self.base_fps + BOOST_FPS_INC
+    
+    def save_score(self, name, score, level):
+        filename = f"scores_level{level}.txt"
+        scores = self.load_scores(level, full=True)  # ← 這裡要有縮排
+
+        updated = False
+        for i, (n, s) in enumerate(scores):
+            if n == name:
+                if score > s:
+                    scores[i] = (name, score)
+                updated = True
+                break
+        if not updated:
+            scores.append((name, score))
+
+        # 按照分數排序後覆寫檔案
+        scores = sorted(scores, key=lambda x: x[1], reverse=True)
+        with open(filename, "w", encoding="utf-8") as f:
+            for n, s in scores:
+                f.write(f"{n},{s}\n")
+
+    # ────────────────────────────────────────────────
+    # 畫面
+    # ────────────────────────────────────────────────
+    def render(self):
+        self.screen.fill(C_BG)
+        # 格線
+        for x in range(GRID_W):
+            for y in range(GRID_H):
+                pygame.draw.rect(self.screen, C_GRID,
+                                 pygame.Rect(x*CELL_SIZE, y*CELL_SIZE+SCOREBAR_H, CELL_SIZE, CELL_SIZE), 1)
+        # 框線
+        pygame.draw.rect(self.screen, C_BOUND, pygame.Rect(0,SCOREBAR_H,WINDOW_W,WINDOW_H-SCOREBAR_H),2)
+
+        # 障礙
+        for ox, oy in self.obstacles:
+            pygame.draw.rect(self.screen, C_OBST,
+                             pygame.Rect(ox*CELL_SIZE, oy*CELL_SIZE+SCOREBAR_H, CELL_SIZE, CELL_SIZE))
+        # 食物
+        for fx, fy in self.food:
+            pygame.draw.rect(self.screen, C_FOOD,
+                             pygame.Rect(fx*CELL_SIZE+2, fy*CELL_SIZE+SCOREBAR_H+2, CELL_SIZE-4, CELL_SIZE-4))
+        # Boost
+        for bx, by in self.boosts:
+            pygame.draw.rect(self.screen, C_BOOST,
+                             pygame.Rect(bx*CELL_SIZE+2, by*CELL_SIZE+SCOREBAR_H+2, CELL_SIZE-4, CELL_SIZE-4))
+
+        # 蛇
+        for i, (sx, sy) in enumerate(self.snake):
+            rect = pygame.Rect(sx*CELL_SIZE, sy*CELL_SIZE+SCOREBAR_H, CELL_SIZE, CELL_SIZE)
+            pygame.draw.rect(self.screen, C_SNAKE, rect)
+            if i==0:
+                eye = CELL_SIZE//5
+                pygame.draw.circle(self.screen, C_BG, (rect.x+CELL_SIZE//3, rect.y+CELL_SIZE//3), eye)
+                pygame.draw.circle(self.screen, C_BG, (rect.x+2*CELL_SIZE//3, rect.y+CELL_SIZE//3), eye)
+
+        # Info
+        info = f"Len {len(self.snake)}  FPS {self.fps}  D{self.difficulty}"
+        if self.boost_remaining > 0: info += " BOOST"
+        self.screen.blit(self.font.render(info, True, C_TEXT), (10, 10))
+
+        if self.game_over:
+            msg = self.font.render("GAME OVER press R ", True, C_GAMEOVER)
+            self.screen.blit(msg, ((WINDOW_W-msg.get_width())//2, WINDOW_H//2))
+        pygame.display.flip()
+
+    # ────────────────────────────────────────────────
+    # 工具：隨機生成 / 移動道具
+    # ────────────────────────────────────────────────
+    def spawn_food(self):
+        for _ in range(1000):
+            p = (random.randint(0,GRID_W-1), random.randint(0,GRID_H-1))
+            if p not in self.snake and p not in self.obstacles and p not in self.food:
+                self.food.add(p); return
+
+    def spawn_boost(self):
+        for _ in range(1000):
+            p = (random.randint(0,GRID_W-1), random.randint(0,GRID_H-1))
+            if p not in self.snake and p not in self.obstacles and p not in self.food and p not in self.boosts:
+                self.boosts.add(p); return
+
+    def random_edge_position(self):
+        side = random.choice(["top", "bottom", "left", "right"])
+        if side == "top":
+            return random.randint(0, GRID_W-1), 0
+        elif side == "bottom":
+            return random.randint(0, GRID_W-1), GRID_H-1
+        elif side == "left":
+            return 0, random.randint(0, GRID_H-1)
+        else:
+            return GRID_W-1, random.randint(0, GRID_H-1)
+
+    def relocate_obstacles(self):
+        new_obs = set()
+        attempts = 0
+        while len(new_obs) < OBSTACLE_COUNT and attempts < OBSTACLE_COUNT * 100:
+            p = (random.randint(0, GRID_W-1), random.randint(0, GRID_H-1))
+            if p not in self.snake and p not in self.food and p not in self.boosts:
+                new_obs.add(p)
+            attempts += 1
+        self.obstacles = new_obs
+
+    def relocate_foods(self):
+        new_foods = set()
+        for _ in range(len(self.food)):
+            for _ in range(1000):
+                p = (random.randint(0, GRID_W-1), random.randint(0, GRID_H-1))
+                if p not in self.snake and p not in self.obstacles and p not in new_foods:
+                    new_foods.add(p)
+                    break
+        self.food = new_foods
+
+# ────────────────────────────────────────────────────────────────────
+# 執行
+# ────────────────────────────────────────────────────────────────────
+if __name__ == "__main__":
+    game = SnakeGame()
+    game.run()
