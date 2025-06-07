@@ -89,14 +89,22 @@ class SnakeGame:
         # 難度選擇 → 設定計時器
         self.difficulty = self.choose_difficulty()
         self.player_name = self.get_player_name()
-        obst_ms, food_ms = DIFFICULTY_SETTINGS[self.difficulty]
-        if obst_ms:
-            pygame.time.set_timer(MOVE_OBSTACLES, obst_ms)
-        if food_ms:
-            pygame.time.set_timer(MOVE_FOODS, food_ms)
 
+        # 讀取設定
+        settings = DIFFICULTY_SETTINGS[self.difficulty]
+        self.obstacle_count = settings["obst_count"]
+        self.initial_food   = settings["food_count"]
+
+        # 設定計時器（只有 >0 才會設）
+        if settings["obst_ms"] > 0:
+            pygame.time.set_timer(MOVE_OBSTACLES, settings["obst_ms"])
+        if settings["food_ms"] > 0:
+            pygame.time.set_timer(MOVE_FOODS, settings["food_ms"])
+
+        # 一律設定的固定計時器
         pygame.time.set_timer(SPAWN_FOOD, NEW_FOOD_EVENT_MS)
         pygame.time.set_timer(SPAWN_BOOST, BOOST_EVENT_MS)
+
         self.reset()
 
     # ────────────────────────────────────────────────
