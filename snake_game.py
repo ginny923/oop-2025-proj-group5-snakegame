@@ -161,6 +161,10 @@ class SnakeGame:
         self.screen.blit(loading_msg, ((WINDOW_W - loading_msg.get_width()) // 2, WINDOW_H // 2))
         pygame.display.flip()
 
+        pygame.time.wait(1000)# 顯示 1 秒
+
+        pygame.event.clear() # ✅ 清空事件佇列，避免卡在輸入或 quit
+
         # 初始蛇身
         tries = 0
         while tries < 1000:
@@ -212,6 +216,10 @@ class SnakeGame:
         self.base_fps = FPS_BASE
         self.fps = FPS_BASE
         self.boost_remaining = 0
+
+        # ✅ 馬上顯示遊戲畫面（不會卡在 loading）
+        self.render()
+        pygame.display.flip()  # ✅ 顯示畫面更新
 
 
     # ────────────────────────────────────────────────
