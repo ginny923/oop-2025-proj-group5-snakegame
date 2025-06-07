@@ -39,13 +39,15 @@ BOOST_FPS_INC     = 4
 SPAWN_BOMB = pygame.USEREVENT + 5
 C_BOMB = (139, 0, 0)
 BOMB_EFFECT = 3  # 被扣掉的長度
+CONFUSE_INTERVAL  = 12000          # 每 12 秒嘗試產生一個迷惑道具
+
 
 
 # 難度 (障礙刷新 ms, 食物刷新 ms)
 DIFFICULTY_SETTINGS = {
-    1: {"obst_ms": 0,     "food_ms": 0,     "obst_count": 10, "food_count": 5, "bomb_count": 1},
-    2: {"obst_ms": 4000,  "food_ms": 0,     "obst_count": 20, "food_count": 4, "bomb_count": 2},
-    3: {"obst_ms": 3000,  "food_ms": 3000,  "obst_count": 35, "food_count": 3, "bomb_count": 3},
+    1: {"obst_ms": 0,     "food_ms": 0,     "obst_count": 10, "food_count": 5, "bomb_count": 1, "confuse_count": 1},
+    2: {"obst_ms": 4000,  "food_ms": 0,     "obst_count": 20, "food_count": 4, "bomb_count": 2, "confuse_count": 1},
+    3: {"obst_ms": 3000,  "food_ms": 3000,  "obst_count": 35, "food_count": 3, "bomb_count": 3, "confuse_count": 2},
 }
 
 speed_increment   = True
@@ -82,6 +84,7 @@ SPAWN_BOOST    = pygame.USEREVENT + 4
 SPAWN_CONFUSE = pygame.USEREVENT + 6
 CONFUSE_DURATION = 5 * FPS_BASE  # 持續 5 秒（依 FPS 計）
 C_CONFUSE = (100, 100, 255)  # 淡藍紫
+
 
 # ────────────────────────────────────────────────────────────────────
 # 遊戲類別
@@ -120,6 +123,10 @@ class SnakeGame:
             pygame.time.set_timer(MOVE_OBSTACLES, settings["obst_ms"])
         if settings["food_ms"] > 0:
             pygame.time.set_timer(MOVE_FOODS, settings["food_ms"])
+
+        if self.difficulty >= 2:
+            pygame.time.set_timer(SPAWN_CONFUSE, CONFUSE_INTERVAL)
+
 
         # 一律設定的固定計時器
         pygame.time.set_timer(SPAWN_FOOD, NEW_FOOD_EVENT_MS)
