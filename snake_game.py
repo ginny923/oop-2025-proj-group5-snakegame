@@ -240,10 +240,13 @@ class SnakeGame:
 
         # 碰撞
         if new_head in self.obstacles:
-            self.game_over = True; return
+            self.game_over = True; 
+            self.save_score(self.player_name, len(self.snake), self.difficulty)
+            return
         if new_head in self.snake:
             idx = self.snake.index(new_head)
             self.snake = self.snake[idx:]
+            self.save_score(self.player_name, len(self.snake), self.difficulty)
 
         # 移動蛇
         self.snake.insert(0, new_head)
