@@ -92,6 +92,11 @@ class SnakeGame:
         self.clock = pygame.time.Clock()
         self.font  = pygame.font.SysFont("consolas", 20)
 
+        pygame.time.set_timer(SPAWN_BOMB, 8000)  # 每 8 秒試圖生成炸彈
+        self.max_bombs = settings["bomb_count"]
+        self.bombs = set()
+
+
         # 難度選擇 → 設定計時器
         self.difficulty = self.choose_difficulty()
         self.player_name = self.get_player_name()
@@ -269,7 +274,8 @@ class SnakeGame:
 
                 if self.game_over and e.key == pygame.K_r:
                     self.reset()
-
+            if e.type == SPAWN_BOMB and not self.game_over and len(self.bombs) < self.max_bombs:
+                self.spawn_bomb()
             if e.type == SPAWN_FOOD and not self.game_over:
                 self.spawn_food()
             if e.type == SPAWN_BOOST and not self.game_over and len(self.boosts) < 1:
@@ -322,6 +328,10 @@ class SnakeGame:
             self.snake = self.snake[idx:]
             self.save_score(self.player_name, len(self.snake), self.difficulty)
         
+        #吃炸彈
+        if new_head in self.bombs:
+            self.bombs.remove(new_head)
+            self.snake = self.snake[:-BOMB_EFFECT] if len(self.snake) > BOMB_EFFECT else self.snake[:1]
 
         # 移動蛇
         self.snake.insert(0, new_head)
@@ -480,6 +490,14 @@ class SnakeGame:
             p = (random.randint(0,GRID_W-1), random.randint(0,GRID_H-1))
             if p not in self.snake and p not in self.obstacles and p not in self.food and p not in self.boosts:
                 self.boosts.add(p); return
+            
+    def spawn_bomb(self):
+        for _ in range(1000):
+            p = (random.randint(0, GRID_W-1), random.randint(0, GRID_H-1))
+            if p not in self.snake and p not in self.obstacles and p not in self.food and p not in self.boosts and p not in self.bombs:
+                self.bombs.add(p)
+                return
+
 
     def random_edge_position(self):
         side = random.choice(["top", "bottom", "left", "right"])
