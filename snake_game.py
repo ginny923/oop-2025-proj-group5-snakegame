@@ -382,6 +382,11 @@ class SnakeGame:
                 hx, hy = self.snake[0]; nx, ny = self.snake[1]
                 self.direction = (hx-nx, hy-ny)
 
+        if new_head in self.confuses:
+            self.confuses.remove(new_head)
+            self.confuse_remaining = CONFUSE_DURATION
+
+
         # 加速道具
         if new_head in self.boosts:
             self.boosts.remove(new_head)
