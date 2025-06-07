@@ -294,11 +294,16 @@ class SnakeGame:
             if self.boost_remaining == 0:
                 self.fps = self.base_fps
 
+        # 計算下一格
+        hx, hy = self.snake[0]
+        dx, dy = self.direction
+        nx, ny = hx+dx, hy+dy
 
         # 邊界處理：隨機傳送
         if not (0 <= nx < GRID_W and 0 <= ny < GRID_H):
             nx, ny = self.random_edge_position()
 
+        new_head = (nx, ny)
 
         # 碰撞
         if new_head in self.obstacles:
@@ -310,13 +315,6 @@ class SnakeGame:
             self.snake = self.snake[idx:]
             self.save_score(self.player_name, len(self.snake), self.difficulty)
         
-        # 計算下一格
-        hx, hy = self.snake[0]
-        dx, dy = self.direction
-        nx, ny = hx+dx, hy+dy
-        new_head = (nx, ny)
-
-        print("🟢 Snake is moving!", self.snake[0], "->", new_head)
 
         # 移動蛇
         self.snake.insert(0, new_head)
@@ -429,6 +427,7 @@ class SnakeGame:
 
         # 蛇
         for i, (sx, sy) in enumerate(self.snake):
+            print("Drawing:", i, (sx, sy))  # ✅ 加上這行
             rect = pygame.Rect(sx*CELL_SIZE, sy*CELL_SIZE+SCOREBAR_H, CELL_SIZE, CELL_SIZE)
             pygame.draw.rect(self.screen, C_SNAKE, rect)
             if i==0:
