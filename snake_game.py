@@ -79,6 +79,10 @@ MOVE_OBSTACLES = pygame.USEREVENT + 2
 MOVE_FOODS     = pygame.USEREVENT + 3
 SPAWN_BOOST    = pygame.USEREVENT + 4
 
+SPAWN_CONFUSE = pygame.USEREVENT + 6
+CONFUSE_DURATION = 5 * FPS_BASE  # 持續 5 秒（依 FPS 計）
+C_CONFUSE = (100, 100, 255)  # 淡藍紫
+
 # ────────────────────────────────────────────────────────────────────
 # 遊戲類別
 # ────────────────────────────────────────────────────────────────────
@@ -337,9 +341,12 @@ class SnakeGame:
             self.snake = self.snake[idx:]
             self.save_score(self.player_name, len(self.snake), self.difficulty)
         
-        #吃炸彈
         if new_head in self.bombs:
             self.bombs.remove(new_head)
+
+            self.flash_explosion()  # 💥 爆炸動畫
+
+            # 扣掉尾巴
             self.snake = self.snake[:-BOMB_EFFECT] if len(self.snake) > BOMB_EFFECT else self.snake[:1]
 
         # 移動蛇
@@ -480,6 +487,18 @@ class SnakeGame:
             ]
 
             pygame.draw.polygon(self.screen, C_BOOST, points)
+
+        # 🌀 迷惑道具 – 模擬螺旋圖樣
+        for cx, cy in self.confuses:
+            center_x = cx * CELL_SIZE + CELL_SIZE // 2
+            center_y = cy * CELL_SIZE + SCOREBAR_H + CELL_SIZE // 2
+            for i in range(5):
+                angle = i * 72
+                radius = 2 + i
+                offset_x = int(radius * (i / 5) * (-1) ** i)
+                offset_y = int(radius * ((4 - i) / 5) * (-1) ** (i + 1))
+                pygame.draw.circle(self.screen, C_CONFUSE,
+                                    (center_x + offset_x, center_y + offset_y), 2)
 
         # 蛇
         for i, (sx, sy) in enumerate(self.snake):
