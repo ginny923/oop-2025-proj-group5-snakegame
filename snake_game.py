@@ -169,12 +169,13 @@ class SnakeGame:
 
         # 障礙、食物、加速
         self.obstacles = set()
-        while len(self.obstacles) < OBSTACLE_COUNT:
+        while len(self.obstacles) < self.obstacle_count:
             p = (random.randint(0, GRID_W-1), random.randint(0, GRID_H-1))
             if p not in self.snake: self.obstacles.add(p)
 
         self.food = set(); self.boosts = set()
-        while len(self.food) < INITIAL_FOOD: self.spawn_food()
+        while len(self.food) < self.initial_food: 
+            self.spawn_food()
 
         # 速度控制
         self.base_fps = FPS_BASE
