@@ -80,6 +80,7 @@ SPAWN_BOOST    = pygame.USEREVENT + 4
 # ────────────────────────────────────────────────────────────────────
 class SnakeGame:
     def __init__(self):
+        self.waiting_start = True
 
         pygame.init()
         self.screen = pygame.display.set_mode((WINDOW_W, WINDOW_H))
@@ -182,8 +183,13 @@ class SnakeGame:
                 break
             tries += 1
 
-        self.direction = dir_idx
-        self.snake = [head, body]
+        # 把 dir_idx 展開成 dx, dy
+        dx, dy = dir_idx
+        # 假設方向是 (0, 1) 往下
+        self.snake = [head,
+                      (head[0] - dx, head[1] - dy),
+                      (head[0] - 2*dx, head[1] - 2*dy)]
+        self.direction = (dx, dy)
 
         self.pending_growth = 0
         self.age = 0
@@ -271,6 +277,7 @@ class SnakeGame:
     # ────────────────────────────────────────────────
     def update(self):
 
+
         if self.waiting_start:
             return  # 還沒按鍵，不更新位置
 
@@ -287,16 +294,11 @@ class SnakeGame:
             if self.boost_remaining == 0:
                 self.fps = self.base_fps
 
-        # 計算下一格
-        hx, hy = self.snake[0]
-        dx, dy = self.direction
-        nx, ny = hx+dx, hy+dy
 
         # 邊界處理：隨機傳送
         if not (0 <= nx < GRID_W and 0 <= ny < GRID_H):
             nx, ny = self.random_edge_position()
 
-        new_head = (nx, ny)
 
         # 碰撞
         if new_head in self.obstacles:
@@ -307,6 +309,14 @@ class SnakeGame:
             idx = self.snake.index(new_head)
             self.snake = self.snake[idx:]
             self.save_score(self.player_name, len(self.snake), self.difficulty)
+        
+        # 計算下一格
+        hx, hy = self.snake[0]
+        dx, dy = self.direction
+        nx, ny = hx+dx, hy+dy
+        new_head = (nx, ny)
+
+        print("🟢 Snake is moving!", self.snake[0], "->", new_head)
 
         # 移動蛇
         self.snake.insert(0, new_head)
