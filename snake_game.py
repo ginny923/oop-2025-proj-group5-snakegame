@@ -36,6 +36,10 @@ NEW_FOOD_EVENT_MS = 2500
 BOOST_EVENT_MS    = 10000          # 新閃電道具產生間隔(ms)
 BOOST_DURATION    = 450            # 加速持續 frame 數（依 FPS 計）
 BOOST_FPS_INC     = 4
+SPAWN_BOMB = pygame.USEREVENT + 5
+C_BOMB = (139, 0, 0)
+BOMB_EFFECT = 3  # 被扣掉的長度
+
 
 # 難度 (障礙刷新 ms, 食物刷新 ms)
 DIFFICULTY_SETTINGS = {
@@ -96,6 +100,9 @@ class SnakeGame:
         settings = DIFFICULTY_SETTINGS[self.difficulty]
         self.obstacle_count = settings["obst_count"]
         self.initial_food   = settings["food_count"]
+        self.max_bombs      = settings["bomb_count"]  # ✅ 加這行
+        self.bombs          = set()                   # ✅ 再加這行
+        pygame.time.set_timer(SPAWN_BOMB, 8000)       # ✅ 加計時器
 
         # 設定計時器（只有 >0 才會設）
         if settings["obst_ms"] > 0:
