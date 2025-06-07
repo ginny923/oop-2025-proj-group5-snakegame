@@ -333,6 +333,10 @@ class SnakeGame:
             if self.boost_remaining == 0:
                 self.fps = self.base_fps
 
+        if self.confuse_remaining > 0:
+            self.confuse_remaining -= 1
+
+
         # 計算下一格
         hx, hy = self.snake[0]
         dx, dy = self.direction
