@@ -427,7 +427,6 @@ class SnakeGame:
 
         # 蛇
         for i, (sx, sy) in enumerate(self.snake):
-            print("Drawing:", i, (sx, sy))  # ✅ 加上這行
             rect = pygame.Rect(sx*CELL_SIZE, sy*CELL_SIZE+SCOREBAR_H, CELL_SIZE, CELL_SIZE)
             pygame.draw.rect(self.screen, C_SNAKE, rect)
             if i==0:
@@ -457,6 +456,7 @@ class SnakeGame:
                         elif e.key in (pygame.K_n, pygame.K_n):
                             self.show_leaderboard()
                             pygame.quit(); sys.exit()
+        pygame.display.flip()  # 或者 pygame.display.update()
 
 
     # ────────────────────────────────────────────────
