@@ -80,6 +80,7 @@ SPAWN_BOOST    = pygame.USEREVENT + 4
 # ────────────────────────────────────────────────────────────────────
 class SnakeGame:
     def __init__(self):
+
         pygame.init()
         self.screen = pygame.display.set_mode((WINDOW_W, WINDOW_H))
         pygame.display.set_caption("Snake Game – Plus Mode")
@@ -264,14 +265,12 @@ class SnakeGame:
                 self.relocate_obstacles()
             if e.type == MOVE_FOODS and not self.game_over:
                 self.relocate_foods()
-            if e.key in DIRS:
-                nd = DIRS[e.key]
-                print(f"[DEBUG] 按下方向鍵：{nd}")  # ← 加這行看看有沒有印出
 
     # ────────────────────────────────────────────────
     # 核心更新
     # ────────────────────────────────────────────────
     def update(self):
+
         if self.waiting_start:
             return  # 還沒按鍵，不更新位置
 
@@ -304,7 +303,7 @@ class SnakeGame:
             self.game_over = True; 
             self.save_score(self.player_name, len(self.snake), self.difficulty)
             return
-        if new_head in self.snake:
+        if new_head in self.snake and len(self.snake) > 2:
             idx = self.snake.index(new_head)
             self.snake = self.snake[idx:]
             self.save_score(self.player_name, len(self.snake), self.difficulty)
