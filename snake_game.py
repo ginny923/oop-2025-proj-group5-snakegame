@@ -39,9 +39,9 @@ BOOST_FPS_INC     = 4
 
 # 難度 (障礙刷新 ms, 食物刷新 ms)
 DIFFICULTY_SETTINGS = {
-    1: (0,     0),
-    2: (4000,  0),
-    3: (3000, 3000),
+    1: {"obst_ms": 0,     "food_ms": 0,     "obst_count": 10, "food_count": 5},
+    2: {"obst_ms": 4000,  "food_ms": 0,     "obst_count": 20, "food_count": 4},
+    3: {"obst_ms": 3000,  "food_ms": 3000,  "obst_count": 35, "food_count": 3},
 }
 
 speed_increment   = True
