@@ -155,6 +155,10 @@ class SnakeGame:
     # 初始化 / 重開
     # ────────────────────────────────────────────────
     def reset(self):
+        max_allowed = GRID_W * GRID_H - 30  # 預留空間
+        if self.obstacle_count > max_allowed:
+            self.obstacle_count = max_allowed
+
         # 起始蛇
         if randomized_start:
             head = (random.randint(5, GRID_W-6), random.randint(5, GRID_H-6))
