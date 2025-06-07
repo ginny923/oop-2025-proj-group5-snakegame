@@ -1,3 +1,4 @@
 l,5
 lolo,4
+dua,4
 LOLO,2
