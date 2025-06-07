@@ -267,7 +267,7 @@ class SnakeGame:
             self.boost_remaining = BOOST_DURATION
             self.fps = self.base_fps + BOOST_FPS_INC
     
-    
+
     def save_score(self, name, score, level):
         filename = f"scores_level{level}.txt"
         scores = self.load_scores(level, full=True)  # ← 這裡要有縮排
@@ -287,6 +287,46 @@ class SnakeGame:
         with open(filename, "w", encoding="utf-8") as f:
             for n, s in scores:
                 f.write(f"{n},{s}\n")
+
+    def load_scores(self, level, full=False):
+        filename = f"scores_level{level}.txt"
+        scores = []
+        try:
+            with open(filename, "r", encoding="utf-8") as f:
+                for line in f:
+                    name, sc = line.strip().split(",")
+                    scores.append((name, int(sc)))
+        except FileNotFoundError:
+            pass
+        scores.sort(key=lambda x: x[1], reverse=True)
+        return scores if full else scores[:5]
+
+    def show_leaderboard(self):
+        scores = self.load_scores(self.difficulty)
+        self.screen.fill(C_BG)
+        title = self.font.render(f"Leaderboard - Level {self.difficulty}", True, C_TEXT)
+        self.screen.blit(title, ((WINDOW_W - title.get_width()) // 2, 50))
+
+        if not scores:
+            no_data = self.font.render("No scores yet.", True, C_TEXT)
+            self.screen.blit(no_data, ((WINDOW_W - no_data.get_width()) // 2, 100))
+        else:
+            for i, (name, score) in enumerate(scores):
+                entry = self.font.render(f"{i+1}. {name} - {score}", True, C_TEXT)
+                self.screen.blit(entry, (WINDOW_W//3, 120 + i * 30))
+
+        msg = self.font.render("Press any key to quit", True, C_MENU)
+        self.screen.blit(msg, ((WINDOW_W - msg.get_width()) // 2, WINDOW_H - 80))
+        pygame.display.flip()
+
+        waiting = True
+        while waiting:
+            for e in pygame.event.get():
+                if e.type == pygame.QUIT:
+                    pygame.quit(); sys.exit()
+                if e.type == pygame.KEYDOWN:
+                    waiting = False
+
 
     # ────────────────────────────────────────────────
     # 畫面
