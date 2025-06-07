@@ -282,6 +282,18 @@ class SnakeGame:
             if e.type == MOVE_FOODS and not self.game_over:
                 self.relocate_foods()
 
+    def flash_explosion(self, times=3, interval=100):
+        for _ in range(times):
+            # 閃紅色
+            self.screen.fill((255, 0, 0))
+            pygame.display.flip()
+            pygame.time.delay(interval)
+        
+            # 閃背景色
+            self.render()
+            pygame.display.flip()
+            pygame.time.delay(interval)
+
     # ────────────────────────────────────────────────
     # 核心更新
     # ────────────────────────────────────────────────
@@ -426,18 +438,17 @@ class SnakeGame:
         # 框線
         pygame.draw.rect(self.screen, C_BOUND, pygame.Rect(0,SCOREBAR_H,WINDOW_W,WINDOW_H-SCOREBAR_H),2)
 
-        # 炸彈（黑色主體 + 黃色引線）
+        # 炸彈（深紅圓 + 黑色引線）
         for bx, by in self.bombs:
             center = (bx * CELL_SIZE + CELL_SIZE // 2, by * CELL_SIZE + SCOREBAR_H + CELL_SIZE // 2)
 
-            #黑色炸彈主體
-            pygame.draw.circle(self.screen, (0, 0, 0), center, CELL_SIZE // 2 - 2)
+            # 圓形炸彈主體
+            pygame.draw.circle(self.screen, C_BOMB, center, CELL_SIZE // 2 - 2)
 
-            # 黃色引線（上方一小段）
+            # 小引線（上方一小條）
             fuse_start = (center[0], center[1] - CELL_SIZE // 2 + 2)
             fuse_end = (center[0], center[1] - CELL_SIZE // 2 - 3)
-            pygame.draw.line(self.screen, (255, 215, 0), fuse_start, fuse_end, 2)  # 黃色
-
+            pygame.draw.line(self.screen, (0, 0, 0), fuse_start, fuse_end, 2)
 
 
         # 障礙
