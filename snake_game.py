@@ -162,16 +162,29 @@ class SnakeGame:
         pygame.display.flip()
 
         # 初始蛇身
-        if randomized_start:
-            head = (random.randint(5, GRID_W-6), random.randint(5, GRID_H-6))
-            dir_idx = random.choice(list(DIRS.values()))
-        else:
-            head, dir_idx = (GRID_W//2, GRID_H//2), (1, 0)
+        tries = 0
+        while tries < 1000:
+            if randomized_start:
+                head = (random.randint(5, GRID_W-6), random.randint(5, GRID_H-6))
+                dir_idx = random.choice(list(DIRS.values()))
+            else:
+                head, dir_idx = (GRID_W//2, GRID_H//2), (1, 0)
+
+            body = (head[0] - dir_idx[0], head[1] - dir_idx[1])
+            next_step = (head[0] + dir_idx[0], head[1] + dir_idx[1])
+
+            if all(0 <= x < GRID_W and 0 <= y < GRID_H for x, y in [body, next_step]):
+                break
+            tries += 1
+
         self.direction = dir_idx
-        self.snake = [head, (head[0]-dir_idx[0], head[1]-dir_idx[1])]
+        self.snake = [head, body]
+
         self.pending_growth = 0
-        self.game_over = False
         self.age = 0
+        self.game_over = False
+
+
 
         # 建立保護區域（蛇頭、身體、頭前一步）
         protect_area = set(self.snake)
