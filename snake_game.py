@@ -577,6 +577,13 @@ class SnakeGame:
             if p not in self.snake and p not in self.obstacles and p not in self.food and p not in self.boosts and p not in self.bombs:
                 self.bombs.add(p)
                 return
+    
+    def spawn_confuse(self):
+        for _ in range(1000):
+            p = (random.randint(0, GRID_W-1), random.randint(0, GRID_H-1))
+            if p not in self.snake and p not in self.obstacles and p not in self.food and p not in self.boosts and p not in self.bombs and p not in self.confuses:
+                self.confuses.add(p)
+                return
 
 
     def random_edge_position(self):
