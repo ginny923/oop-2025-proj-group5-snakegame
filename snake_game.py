@@ -446,10 +446,21 @@ class SnakeGame:
             leaf_rect = pygame.Rect(center[0] - 2, center[1] - CELL_SIZE//2 + 2, 4, 4)
             pygame.draw.rect(self.screen, (0, 200, 0), leaf_rect)
 
-        # Boost
+        # Boost（閃電造型）
         for bx, by in self.boosts:
-            pygame.draw.rect(self.screen, C_BOOST,
-                             pygame.Rect(bx*CELL_SIZE+2, by*CELL_SIZE+SCOREBAR_H+2, CELL_SIZE-4, CELL_SIZE-4))
+            x0 = bx * CELL_SIZE
+            y0 = by * CELL_SIZE + SCOREBAR_H
+
+            points = [
+                (x0 + CELL_SIZE//2 - 2, y0 + 2),          # 上尖
+                (x0 + CELL_SIZE//2 + 1, y0 + CELL_SIZE//2 - 4),
+                (x0 + CELL_SIZE//2 - 3, y0 + CELL_SIZE//2 - 4),
+                (x0 + CELL_SIZE//2 + 2, y0 + CELL_SIZE - 4),  # 下尖
+                (x0 + CELL_SIZE//2 - 1, y0 + CELL_SIZE//2 + 2),
+                (x0 + CELL_SIZE//2 + 3, y0 + CELL_SIZE//2 + 2)
+            ]
+
+            pygame.draw.polygon(self.screen, C_BOOST, points)
 
         # 蛇
         for i, (sx, sy) in enumerate(self.snake):
