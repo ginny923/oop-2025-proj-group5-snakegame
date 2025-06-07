@@ -282,6 +282,8 @@ class SnakeGame:
                     self.reset()
             if e.type == SPAWN_BOMB and not self.game_over and len(self.bombs) < self.max_bombs:
                 self.spawn_bomb()
+            if e.type == SPAWN_CONFUSE and not self.game_over and len(self.confuses) < 1:
+                self.spawn_confuse()
             if e.type == SPAWN_FOOD and not self.game_over:
                 self.spawn_food()
             if e.type == SPAWN_BOOST and not self.game_over and len(self.boosts) < 1:
