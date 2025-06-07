@@ -264,6 +264,9 @@ class SnakeGame:
                 self.relocate_obstacles()
             if e.type == MOVE_FOODS and not self.game_over:
                 self.relocate_foods()
+            if e.key in DIRS:
+                nd = DIRS[e.key]
+                print(f"[DEBUG] 按下方向鍵：{nd}")  # ← 加這行看看有沒有印出
 
     # ────────────────────────────────────────────────
     # 核心更新
