@@ -43,9 +43,9 @@ BOMB_EFFECT = 3  # 被扣掉的長度
 
 # 難度 (障礙刷新 ms, 食物刷新 ms)
 DIFFICULTY_SETTINGS = {
-    1: {"obst_ms": 0,     "food_ms": 0,     "obst_count": 10, "food_count": 5},
-    2: {"obst_ms": 4000,  "food_ms": 0,     "obst_count": 20, "food_count": 4},
-    3: {"obst_ms": 3000,  "food_ms": 3000,  "obst_count": 35, "food_count": 3},
+    1: {"obst_ms": 0,     "food_ms": 0,     "obst_count": 10, "food_count": 5, "bomb_count": 1},
+    2: {"obst_ms": 4000,  "food_ms": 0,     "obst_count": 20, "food_count": 4, "bomb_count": 2},
+    3: {"obst_ms": 3000,  "food_ms": 3000,  "obst_count": 35, "food_count": 3, "bomb_count": 3},
 }
 
 speed_increment   = True
