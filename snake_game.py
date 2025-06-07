@@ -155,16 +155,13 @@ class SnakeGame:
     # 初始化 / 重開
     # ────────────────────────────────────────────────
     def reset(self):
+    # 畫面顯示
         self.screen.fill(C_BG)
         loading_msg = self.font.render("Generating map... Please wait", True, C_TEXT)
         self.screen.blit(loading_msg, ((WINDOW_W - loading_msg.get_width()) // 2, WINDOW_H // 2))
         pygame.display.flip()
 
-        max_allowed = GRID_W * GRID_H - 30  # 預留空間
-        if self.obstacle_count > max_allowed:
-            self.obstacle_count = max_allowed
-
-        # 起始蛇
+        # 初始蛇身
         if randomized_start:
             head = (random.randint(5, GRID_W-6), random.randint(5, GRID_H-6))
             dir_idx = random.choice(list(DIRS.values()))
@@ -176,33 +173,33 @@ class SnakeGame:
         self.game_over = False
         self.age = 0
 
-        # 保護蛇的位置（頭、身體、頭前面1格）
+        # 建立保護區域（蛇頭、身體、頭前一步）
         protect_area = set(self.snake)
-
-        # 加上頭的下一步（避免一開始就撞）
         hx, hy = self.snake[0]
         dx, dy = self.direction
         protect_area.add((hx + dx, hy + dy))
 
+        # 建立所有合法位置
+        all_grid = {(x, y) for x in range(GRID_W) for y in range(GRID_H)}
+        available = list(all_grid - protect_area)
 
-        # 障礙、食物、加速
-        self.obstacles = set()
-        attempts = 0
-        while len(self.obstacles) < self.obstacle_count and attempts < 1000:
-            p = (random.randint(0, GRID_W-1), random.randint(0, GRID_H-1))
-            if p not in self.snake:
-                self.obstacles.add(p)
-            attempts += 1
+        # 檢查可用空格是否足夠
+        total_needed = self.obstacle_count + self.initial_food
+        if len(available) < total_needed:
+            print("⚠ 地圖太小或障礙數量太多，請減少設定")
+            pygame.quit(); sys.exit()
 
+        # 障礙與食物
+        sampled = random.sample(available, total_needed)
+        self.obstacles = set(sampled[:self.obstacle_count])
+        self.food = set(sampled[self.obstacle_count:self.obstacle_count+self.initial_food])
+        self.boosts = set()
 
-        self.food = set(); self.boosts = set()
-        while len(self.food) < self.initial_food: 
-            self.spawn_food()
-
-        # 速度控制
+        # 重設速度
         self.base_fps = FPS_BASE
         self.fps = FPS_BASE
-        self.boost_remaining = 0  # frame 計數
+        self.boost_remaining = 0
+
 
     # ────────────────────────────────────────────────
     # 主迴圈
