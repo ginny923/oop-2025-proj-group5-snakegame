@@ -176,6 +176,15 @@ class SnakeGame:
         self.game_over = False
         self.age = 0
 
+        # 保護蛇的位置（頭、身體、頭前面1格）
+        protect_area = set(self.snake)
+
+        # 加上頭的下一步（避免一開始就撞）
+        hx, hy = self.snake[0]
+        dx, dy = self.direction
+        protect_area.add((hx + dx, hy + dy))
+
+
         # 障礙、食物、加速
         self.obstacles = set()
         attempts = 0
