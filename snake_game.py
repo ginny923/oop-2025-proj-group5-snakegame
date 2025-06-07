@@ -109,6 +109,11 @@ class SnakeGame:
         # ✅ 現在才開始設 timer 沒問題
         pygame.time.set_timer(SPAWN_BOMB, 8000)
 
+        self.confuses = set()
+        self.confuse_remaining = 0
+        pygame.time.set_timer(SPAWN_CONFUSE, 12000)  # 每 12 秒嘗試產生一次
+
+
 
         # 設定計時器（只有 >0 才會設）
         if settings["obst_ms"] > 0:
