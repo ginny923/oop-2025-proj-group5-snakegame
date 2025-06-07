@@ -372,9 +372,23 @@ class SnakeGame:
         self.screen.blit(self.font.render(info, True, C_TEXT), (10, 10))
 
         if self.game_over:
-            msg = self.font.render("GAME OVER press R ", True, C_GAMEOVER)
-            self.screen.blit(msg, ((WINDOW_W-msg.get_width())//2, WINDOW_H//2))
-        pygame.display.flip()
+            msg = self.font.render("GAME OVER – Play again? (Y/N)", True, C_GAMEOVER)
+            self.screen.blit(msg, ((WINDOW_W - msg.get_width()) // 2, WINDOW_H // 2))
+            pygame.display.flip()
+
+            waiting = True
+            while waiting:
+                for e in pygame.event.get():
+                    if e.type == pygame.QUIT:
+                        pygame.quit(); sys.exit()
+                    if e.type == pygame.KEYDOWN:
+                        if e.key in (pygame.K_y, pygame.K_y):
+                            self.reset()
+                            waiting = False
+                        elif e.key in (pygame.K_n, pygame.K_n):
+                            self.show_leaderboard()
+                            pygame.quit(); sys.exit()
+
 
     # ────────────────────────────────────────────────
     # 工具：隨機生成 / 移動道具
