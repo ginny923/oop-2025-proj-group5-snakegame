@@ -92,22 +92,20 @@ class SnakeGame:
         self.clock = pygame.time.Clock()
         self.font  = pygame.font.SysFont("consolas", 20)
 
-        pygame.time.set_timer(SPAWN_BOMB, 8000)  # 每 8 秒試圖生成炸彈
-        self.max_bombs = settings["bomb_count"]
-        self.bombs = set()
-
-
-        # 難度選擇 → 設定計時器
+        # ✅ 先選難度和名稱
         self.difficulty = self.choose_difficulty()
         self.player_name = self.get_player_name()
 
-        # 讀取設定
+        # ✅ 然後取得對應難度設定
         settings = DIFFICULTY_SETTINGS[self.difficulty]
         self.obstacle_count = settings["obst_count"]
         self.initial_food   = settings["food_count"]
-        self.max_bombs      = settings["bomb_count"]  # ✅ 加這行
-        self.bombs          = set()                   # ✅ 再加這行
-        pygame.time.set_timer(SPAWN_BOMB, 8000)       # ✅ 加計時器
+        self.max_bombs      = settings["bomb_count"]
+        self.bombs          = set()
+
+        # ✅ 現在才開始設 timer 沒問題
+        pygame.time.set_timer(SPAWN_BOMB, 8000)
+
 
         # 設定計時器（只有 >0 才會設）
         if settings["obst_ms"] > 0:
