@@ -92,7 +92,6 @@ class SnakeGame:
         self.clock = pygame.time.Clock()
         self.font  = pygame.font.SysFont("consolas", 20)
 
-        # ✅ 先選難度和名稱
         self.difficulty = self.choose_difficulty()
         self.player_name = self.get_player_name()
 
@@ -427,14 +426,26 @@ class SnakeGame:
         # 框線
         pygame.draw.rect(self.screen, C_BOUND, pygame.Rect(0,SCOREBAR_H,WINDOW_W,WINDOW_H-SCOREBAR_H),2)
 
+        # 炸彈
+        for bx, by in self.bombs:
+            pygame.draw.circle(self.screen, C_BOMB,
+                                (bx*CELL_SIZE + CELL_SIZE//2, by*CELL_SIZE + SCOREBAR_H + CELL_SIZE//2),
+                                CELL_SIZE//2 - 2)
+
         # 障礙
         for ox, oy in self.obstacles:
             pygame.draw.rect(self.screen, C_OBST,
                              pygame.Rect(ox*CELL_SIZE, oy*CELL_SIZE+SCOREBAR_H, CELL_SIZE, CELL_SIZE))
-        # 食物
+        # 食物（蘋果造型）
         for fx, fy in self.food:
-            pygame.draw.rect(self.screen, C_FOOD,
-                             pygame.Rect(fx*CELL_SIZE+2, fy*CELL_SIZE+SCOREBAR_H+2, CELL_SIZE-4, CELL_SIZE-4))
+            # 畫紅色圓形作為蘋果果實
+            center = (fx*CELL_SIZE + CELL_SIZE//2, fy*CELL_SIZE + SCOREBAR_H + CELL_SIZE//2)
+            pygame.draw.circle(self.screen, C_FOOD, center, CELL_SIZE//2 - 2)
+
+            # 畫小綠葉（上方小矩形）
+            leaf_rect = pygame.Rect(center[0] - 2, center[1] - CELL_SIZE//2 + 2, 4, 4)
+            pygame.draw.rect(self.screen, (0, 200, 0), leaf_rect)
+
         # Boost
         for bx, by in self.boosts:
             pygame.draw.rect(self.screen, C_BOOST,
