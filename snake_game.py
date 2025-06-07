@@ -250,7 +250,7 @@ class SnakeGame:
                     pygame.quit(); sys.exit()
                 if e.key in DIRS:
                     nd = DIRS[e.key]
-                    if (nd[0] != -self.direction[0] or nd[1] != -self.direction[1]):
+                    if self.waiting_start or (nd[0] != -self.direction[0] or nd[1] != -self.direction[1]):
                         self.direction = nd
                         self.waiting_start = False  # ✅ 玩家第一次按方向鍵後才開始移動
 
