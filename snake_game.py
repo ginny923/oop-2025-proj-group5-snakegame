@@ -221,6 +221,9 @@ class SnakeGame:
         self.render()
         pygame.display.flip()  # ✅ 顯示畫面更新
 
+        self.waiting_start = True  # 等待玩家第一次按鍵才開始動
+
+
 
     # ────────────────────────────────────────────────
     # 主迴圈
@@ -237,6 +240,7 @@ class SnakeGame:
     # 事件處理
     # ────────────────────────────────────────────────
     def handle_events(self):
+
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
@@ -247,6 +251,8 @@ class SnakeGame:
                     nd = DIRS[e.key]
                     if (nd[0] != -self.direction[0] or nd[1] != -self.direction[1]):
                         self.direction = nd
+                        self.waiting_start = False  # ✅ 玩家第一次按方向鍵後才開始移動
+
                 if self.game_over and e.key == pygame.K_r:
                     self.reset()
 
@@ -263,6 +269,9 @@ class SnakeGame:
     # 核心更新
     # ────────────────────────────────────────────────
     def update(self):
+        if self.waiting_start:
+            return  # 還沒按鍵，不更新位置
+
         # FPS 自增
         self.age += 1
         if speed_increment and self.age % 150 == 0:
