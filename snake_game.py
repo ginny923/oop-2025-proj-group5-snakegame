@@ -156,10 +156,10 @@ class SnakeGame:
     # ────────────────────────────────────────────────
     def reset(self):
         self.screen.fill(C_BG)
-        loading_msg = self.font.render("Loading...", True, C_TEXT)
+        loading_msg = self.font.render("Generating map... Please wait", True, C_TEXT)
         self.screen.blit(loading_msg, ((WINDOW_W - loading_msg.get_width()) // 2, WINDOW_H // 2))
         pygame.display.flip()
-        
+
         max_allowed = GRID_W * GRID_H - 30  # 預留空間
         if self.obstacle_count > max_allowed:
             self.obstacle_count = max_allowed
@@ -178,9 +178,13 @@ class SnakeGame:
 
         # 障礙、食物、加速
         self.obstacles = set()
-        while len(self.obstacles) < self.obstacle_count:
+        attempts = 0
+        while len(self.obstacles) < self.obstacle_count and attempts < 1000:
             p = (random.randint(0, GRID_W-1), random.randint(0, GRID_H-1))
-            if p not in self.snake: self.obstacles.add(p)
+            if p not in self.snake:
+                self.obstacles.add(p)
+            attempts += 1
+
 
         self.food = set(); self.boosts = set()
         while len(self.food) < self.initial_food: 
