@@ -274,9 +274,15 @@ class SnakeGame:
                     pygame.quit(); sys.exit()
                 if e.key in DIRS:
                     nd = DIRS[e.key]
+
+                    # 🌀 如果進入混亂狀態，左右反轉
+                    if self.confuse_remaining > 0:
+                        nd = (-nd[0], nd[1]) if nd[0] != 0 else nd
+
                     if self.waiting_start or (nd[0] != -self.direction[0] or nd[1] != -self.direction[1]):
                         self.direction = nd
-                        self.waiting_start = False  # ✅ 玩家第一次按方向鍵後才開始移動
+                        self.waiting_start = False
+
 
                 if self.game_over and e.key == pygame.K_r:
                     self.reset()
