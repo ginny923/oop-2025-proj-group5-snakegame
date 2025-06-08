@@ -45,9 +45,9 @@ CONFUSE_INTERVAL  = 12000          # 每 12 秒嘗試產生一個迷惑道具
 
 # 難度 (障礙刷新 ms, 食物刷新 ms)
 DIFFICULTY_SETTINGS = {
-    1: {"obst_ms": 0,     "food_ms": 0,     "obst_count": 10, "food_count": 5, "bomb_count": 1, "confuse_count": 1},
-    2: {"obst_ms": 4000,  "food_ms": 0,     "obst_count": 20, "food_count": 4, "bomb_count": 2, "confuse_count": 1},
-    3: {"obst_ms": 3000,  "food_ms": 3000,  "obst_count": 35, "food_count": 3, "bomb_count": 3, "confuse_count": 2},
+    1: {"obst_ms": 0,     "food_ms": 0,     "obst_count": 10, "food_count": 5, "bomb_count": 1, "confuse_count": 1, "portal_pairs": 1},
+    2: {"obst_ms": 4000,  "food_ms": 0,     "obst_count": 20, "food_count": 4, "bomb_count": 2, "confuse_count": 1, "portal_pairs": 2},
+    3: {"obst_ms": 3000,  "food_ms": 3000,  "obst_count": 35, "food_count": 3, "bomb_count": 3, "confuse_count": 2, "portal_pairs": 3},
 }
 
 speed_increment   = True
@@ -111,6 +111,7 @@ class SnakeGame:
         self.max_confuses = settings["confuse_count"]
         self.bombs          = set()
         self.portals = []  # 傳送門位置對
+        self.num_portal_pairs = settings["portal_pairs"]
 
 
         # ✅ 現在才開始設 timer 沒問題
@@ -443,16 +444,19 @@ class SnakeGame:
 
         if new_head in self.portals:
             idx = self.portals.index(new_head)
-            other_idx = 1 - idx  # 兩個門互相傳送
+            if idx % 2 == 0:
+                other_idx = idx + 1
+            else:
+                other_idx = idx - 1
             new_head = self.portals[other_idx]
 
-    
-    def spawn_portals(self):
-        forbidden = set(self.snake) | self.obstacles | self.food | self.boosts | self.bombs | self.confuses
-        all_positions = {(x, y) for x in range(GRID_W) for y in range(GRID_H)}
-        candidates = list(all_positions - forbidden)
-        if len(candidates) >= 2:
-            self.portals = random.sample(candidates, 2)
+            # 移動蛇：直接從出口出現（跳過一般移動流程）
+            self.snake.insert(0, new_head)
+            if self.pending_growth:
+                self.pending_growth -= 1
+            else:
+                self.snake.pop()
+            return
 
 
     def save_score(self, name, score, level):
@@ -650,6 +654,15 @@ class SnakeGame:
             if p not in self.snake and p not in self.obstacles and p not in self.food and p not in self.boosts and p not in self.bombs and p not in self.confuses:
                 self.confuses.add(p)
                 return
+    
+    def spawn_portals(self):
+        forbidden = set(self.snake) | self.obstacles | self.food | self.boosts | self.bombs | self.confuses
+        all_positions = {(x, y) for x in range(GRID_W) for y in range(GRID_H)}
+        candidates = list(all_positions - forbidden)
+
+        total_needed = self.num_portal_pairs * 2
+        if len(candidates) >= total_needed:
+            self.portals = random.sample(candidates, total_needed)
 
 
     def random_edge_position(self):
