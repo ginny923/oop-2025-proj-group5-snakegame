@@ -113,8 +113,8 @@ class SnakeGame:
         self.screen = pygame.display.set_mode((WINDOW_W, WINDOW_H))
         pygame.display.set_caption("Snake Game – Plus Mode")
         self.clock = pygame.time.Clock()
-        self.font  = pygame.font.SysFont("consolas", 20)
-        self.small_font = pygame.font.SysFont("consolas", 14)
+        self.font  = pygame.font.SysFont("Noto Sans CJK TC", 20)
+        self.small_font = pygame.font.SysFont("Noto Sans CJK TC", 14)
 
         self.difficulty = self.choose_difficulty()
         self.show_level_info(self.difficulty)
@@ -216,55 +216,104 @@ class SnakeGame:
 
     def show_level_info(self, level):
         self.screen.fill(C_BG)
-        info_lines = []
 
+        # 設定說明內容與對應圖示代號（用文字標記圖形種類）
         if level == 1:
-            info_lines = [
-                "Level 1 – Normal",
-                "• Static obstacles",
-                "• Regular food",
-                "• Basic gameplay"
-            ]
+            title = "Level 1 – 普通模式"
+            info = [
+            ("wall", "固定障礙物：不能碰撞"),
+            ("food", "食物：吃到會變長，並反轉蛇身方向"),
+            ("boost", "加速道具：吃到後暫時加速"),
+            ("portal", "傳送門：進入後隨機傳到另一邊"),
+            ("border", "撞牆後會從對側邊界傳送出來"),
+        ]
         elif level == 2:
-            info_lines = [
-                "Level 2 – Moving Obstacles",
-                "• Obstacles move every few seconds",
-                "• More challenge",
-                "• Occasional confuse item"
-            ]
+            title = "Level 2 – 障礙物會移動"
+            info = [
+            ("wall", "障礙物每 4 秒移動一次"),
+            ("food", "食物較少但固定"),
+            ("boost", "加速道具"),
+            ("portal", "傳送門"),
+            ("confuse", "迷惑道具：方向顛倒 5 秒"),
+            ("bomb", "炸彈：吃到會爆炸，扣除蛇尾長度"),
+        ]
         elif BOSS_MODE:
-            info_lines = [
-                "Boss Mode – Survival",
-                "• Shrinks over time",
-                "• Fake food and invisible obstacles",
-                "• Bombs and confusion everywhere"
-            ]
+            title = "Boss Mode – 魔王生存模式"
+            info = [
+            ("timer", "每 10 秒自動縮短蛇身"),
+            ("fake", "假食物：吃到扣長度"),
+            ("invisible", "隱形障礙：碰到立即死亡"),
+            ("bomb", "炸彈"),
+            ("boost", "加速道具"),
+            ("confuse", "迷惑道具"),
+            ("portal", "傳送門"),
+        ]
         else:
-            info_lines = [
-                "Level 3 – Extreme",
-                "• Moving obstacles and food",
-                "• Multiple bombs, portals, confuse",
-                "• Fast-paced gameplay"
-            ]
+            title = "Level 3 – 全面混亂模式"
+            info = [
+            ("wall", "障礙與食物會定時移動"),
+            ("food", "食物數量減少"),
+            ("bomb", "炸彈"),
+            ("boost", "加速道具"),
+            ("confuse", "迷惑道具"),
+            ("portal", "傳送門：多組"),
+        ]
 
-        y_start = 150
-        for i, line in enumerate(info_lines):
-            txt_surface = self.font.render(line, True, C_TEXT)
-            self.screen.blit(txt_surface, ((WINDOW_W - txt_surface.get_width()) // 2, y_start + i * 40))
+        # 畫標題
+        title_surface = self.font.render(title, True, C_TEXT)
+        self.screen.blit(title_surface, ((WINDOW_W - title_surface.get_width()) // 2, 60))
 
-        tip = self.small_font.render("Press Enter to continue...", True, C_MENU)
-        self.screen.blit(tip, ((WINDOW_W - tip.get_width()) // 2, y_start + len(info_lines) * 40 + 30))
+        # 畫每一列說明與圖示
+        y_start = 130
+        for i, (icon, text) in enumerate(info):
+            y = y_start + i * 35
+            self.draw_icon(icon, 40, y + 5)
+            text_surface = self.small_font.render(text, True, C_TEXT)
+            self.screen.blit(text_surface, (70, y))
+
+        # 提示
+        tip = self.small_font.render("請按 Enter 鍵繼續...", True, C_MENU)
+        self.screen.blit(tip, ((WINDOW_W - tip.get_width()) // 2, y + 50))
+
         pygame.display.flip()
 
-        # 等待按下 Enter
+        # 等待 Enter
         waiting = True
         while waiting:
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
                     pygame.quit(); sys.exit()
-                if e.type == pygame.KEYDOWN:
-                    if e.key == pygame.K_RETURN:
-                        waiting = False
+                if e.type == pygame.KEYDOWN and e.key == pygame.K_RETURN:
+                    waiting = False
+    
+    def draw_icon(self, type, x, y):
+        if type == "food":
+            pygame.draw.circle(self.screen, C_FOOD, (x+8, y+8), 7)
+            pygame.draw.rect(self.screen, (0, 200, 0), pygame.Rect(x+6, y-2, 4, 4))
+        elif type == "boost":
+            points = [
+            (x+5, y), (x+9, y+6), (x+6, y+6),
+            (x+11, y+16), (x+7, y+9), (x+10, y+9)
+        ]
+            pygame.draw.polygon(self.screen, C_BOOST, points)
+        elif type == "bomb":
+            pygame.draw.circle(self.screen, C_BOMB, (x+8, y+8), 6)
+            pygame.draw.line(self.screen, (0,0,0), (x+8, y+2), (x+8, y-3), 2)
+        elif type == "portal":
+            pygame.draw.circle(self.screen, (0,255,255), (x+8, y+8), 7, 2)
+        elif type == "confuse":
+            for i in range(3):
+                pygame.draw.circle(self.screen, C_CONFUSE, (x+4+i*4, y+8), 2)
+        elif type == "wall":
+            pygame.draw.rect(self.screen, C_OBST, pygame.Rect(x+2, y+2, 12, 12))
+        elif type == "fake":
+            pygame.draw.circle(self.screen, C_FAKE_FOOD, (x+8, y+8), 6)
+        elif type == "invisible":
+            pygame.draw.rect(self.screen, C_FAKE_OBST, pygame.Rect(x+2, y+2, 12, 12), 1)
+        elif type == "timer":
+            pygame.draw.circle(self.screen, (200, 200, 0), (x+8, y+8), 7, 2)
+            pygame.draw.line(self.screen, (200, 200, 0), (x+8, y+8), (x+8, y+3), 2)
+            pygame.draw.line(self.screen, (200, 200, 0), (x+8, y+8), (x+11, y+8), 2)
 
     # ────────────────────────────────────────────────
     # 初始化 / 重開
