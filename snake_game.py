@@ -778,6 +778,15 @@ class SnakeGame:
                     break
         self.food = new_foods
 
+    def relocate_bombs(self):
+        new_bombs = set()
+        for _ in range(len(self.bombs)):
+            for _ in range(1000):
+                p = (random.randint(0, GRID_W-1), random.randint(0, GRID_H-1))
+                if p not in self.snake and p not in self.food and p not in self.boosts and p not in self.obstacles:
+                    new_bombs.add(p); break
+        self.bombs = new_bombs
+
 # ────────────────────────────────────────────────────────────────────
 # 執行
 # ────────────────────────────────────────────────────────────────────
