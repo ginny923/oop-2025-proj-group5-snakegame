@@ -490,6 +490,21 @@ class SnakeGame:
             else:
                 self.snake.pop()
             return
+        
+        # 在 update 中處理 Boss 模式效果
+        if BOSS_MODE:
+            if self.age % (FPS_BASE * 10) == 0 and len(self.snake) > 1:
+                self.snake.pop()
+
+        if new_head in self.fake_food:
+            self.fake_food.remove(new_head)
+            penalty = random.randint(2, 5)
+            self.snake = self.snake[:-penalty] if len(self.snake) > penalty else self.snake[:1]
+
+        if new_head in self.invisible_obstacles:
+            self.game_over = True
+            self.save_score(self.player_name, len(self.snake), self.difficulty)
+            return
 
 
     def save_score(self, name, score, level):
