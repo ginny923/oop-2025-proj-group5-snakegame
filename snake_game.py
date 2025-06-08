@@ -107,6 +107,7 @@ class SnakeGame:
         self.obstacle_count = settings["obst_count"]
         self.initial_food   = settings["food_count"]
         self.max_bombs      = settings["bomb_count"]
+        self.max_confuses = settings["confuse_count"]
         self.bombs          = set()
 
         # ✅ 現在才開始設 timer 沒問題
@@ -244,6 +245,8 @@ class SnakeGame:
         self.food = set(sampled[self.obstacle_count:self.obstacle_count+self.initial_food])
         self.boosts = set()
 
+        self.confuses = set()
+
         # 重設速度
         self.base_fps = FPS_BASE
         self.fps = FPS_BASE
@@ -295,8 +298,10 @@ class SnakeGame:
                     self.reset()
             if e.type == SPAWN_BOMB and not self.game_over and len(self.bombs) < self.max_bombs:
                 self.spawn_bomb()
-            if e.type == SPAWN_CONFUSE and not self.game_over and len(self.confuses) < 1:
-                self.spawn_confuse()
+            if e.type == SPAWN_CONFUSE and not self.game_over:
+                # 限制增加速度，不要太快增加太多
+                if len(self.confuses) < self.max_confuses + self.age // 300:
+                    self.spawn_confuse()
             if e.type == SPAWN_FOOD and not self.game_over:
                 self.spawn_food()
             if e.type == SPAWN_BOOST and not self.game_over and len(self.boosts) < 1:
