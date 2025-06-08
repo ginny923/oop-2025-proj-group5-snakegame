@@ -68,6 +68,13 @@ C_TEXT     = (255, 255, 255)
 C_GAMEOVER = (255, 80, 80)
 C_MENU     = (180, 180, 180)
 
+PORTAL_COLORS = [
+    (0, 255, 255),  # 青藍
+    (255, 0, 255),  # 粉紫
+    (255, 255, 0),  # 黃
+    (0, 255, 128),  # 綠藍
+]
+
 DIRS = {
     pygame.K_w: (0, -1), pygame.K_UP: (0, -1),
     pygame.K_s: (0, 1),  pygame.K_DOWN: (0, 1),
@@ -544,10 +551,16 @@ class SnakeGame:
             fuse_end = (center[0], center[1] - CELL_SIZE // 2 - 3)
             pygame.draw.line(self.screen, (0, 0, 0), fuse_start, fuse_end, 2)
 
-        # 傳送門（藍綠圓圈）
-        for px, py in self.portals:
-            center = (px * CELL_SIZE + CELL_SIZE // 2, py * CELL_SIZE + SCOREBAR_H + CELL_SIZE // 2)
-            pygame.draw.circle(self.screen, (0, 255, 255), center, CELL_SIZE // 2 - 1, 2)
+        # 傳送門（每對一色）
+        for i in range(0, len(self.portals), 2):
+            color = PORTAL_COLORS[(i//2) % len(PORTAL_COLORS)]  # 取對應顏色
+            for j in (0, 1):  # 這對的兩個門
+                px, py = self.portals[i + j]
+                center = (px * CELL_SIZE + CELL_SIZE // 2, py * CELL_SIZE + SCOREBAR_H + CELL_SIZE // 2)
+        
+                # 閃爍感 – 隨時間閃動外圈厚度
+                thickness = 2 + (self.age // 5) % 2
+                pygame.draw.circle(self.screen, color, center, CELL_SIZE // 2 - 1, thickness)
 
 
         # 障礙
