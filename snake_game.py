@@ -117,6 +117,7 @@ class SnakeGame:
         self.small_font = pygame.font.SysFont("consolas", 14)
 
         self.difficulty = self.choose_difficulty()
+        self.show_level_info(self.difficulty)
         self.player_name = self.get_player_name()
 
         # ✅ 然後取得對應難度設定
@@ -213,7 +214,57 @@ class SnakeGame:
                 self.screen.blit(label, (WINDOW_W//2-110, 150+i*40))
             pygame.display.flip(); self.clock.tick(15)
 
+    def show_level_info(self, level):
+        self.screen.fill(C_BG)
+        info_lines = []
 
+        if level == 1:
+            info_lines = [
+                "Level 1 – Normal",
+                "• Static obstacles",
+                "• Regular food",
+                "• Basic gameplay"
+            ]
+        elif level == 2:
+            info_lines = [
+                "Level 2 – Moving Obstacles",
+                "• Obstacles move every few seconds",
+                "• More challenge",
+                "• Occasional confuse item"
+            ]
+        elif BOSS_MODE:
+            info_lines = [
+                "Boss Mode – Survival",
+                "• Shrinks over time",
+                "• Fake food and invisible obstacles",
+                "• Bombs and confusion everywhere"
+            ]
+        else:
+            info_lines = [
+                "Level 3 – Extreme",
+                "• Moving obstacles and food",
+                "• Multiple bombs, portals, confuse",
+                "• Fast-paced gameplay"
+            ]
+
+        y_start = 150
+        for i, line in enumerate(info_lines):
+            txt_surface = self.font.render(line, True, C_TEXT)
+            self.screen.blit(txt_surface, ((WINDOW_W - txt_surface.get_width()) // 2, y_start + i * 40))
+
+        tip = self.small_font.render("Press Enter to continue...", True, C_MENU)
+        self.screen.blit(tip, ((WINDOW_W - tip.get_width()) // 2, y_start + len(info_lines) * 40 + 30))
+        pygame.display.flip()
+
+        # 等待按下 Enter
+        waiting = True
+        while waiting:
+            for e in pygame.event.get():
+                if e.type == pygame.QUIT:
+                    pygame.quit(); sys.exit()
+                if e.type == pygame.KEYDOWN:
+                    if e.key == pygame.K_RETURN:
+                        waiting = False
 
     # ────────────────────────────────────────────────
     # 初始化 / 重開
