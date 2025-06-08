@@ -67,6 +67,7 @@ C_BOOST    = (255, 215, 0)
 C_TEXT     = (255, 255, 255)
 C_GAMEOVER = (255, 80, 80)
 C_MENU     = (180, 180, 180)
+C_SNAKE_CONFUSE = (100, 100, 255)  # 混亂狀態下的蛇色（藍紫色）
 
 PORTAL_COLORS = [
     (0, 255, 255),  # 青藍
@@ -614,9 +615,10 @@ class SnakeGame:
                                     (center_x + offset_x, center_y + offset_y), 2)
 
         # 蛇
+        snake_color = C_SNAKE_CONFUSE if self.confuse_remaining > 0 else C_SNAKE
         for i, (sx, sy) in enumerate(self.snake):
             rect = pygame.Rect(sx*CELL_SIZE, sy*CELL_SIZE+SCOREBAR_H, CELL_SIZE, CELL_SIZE)
-            pygame.draw.rect(self.screen, C_SNAKE, rect)
+            pygame.draw.rect(self.screen, snake_color, rect)
             if i==0:
                 eye = CELL_SIZE//5
                 pygame.draw.circle(self.screen, C_BG, (rect.x+CELL_SIZE//3, rect.y+CELL_SIZE//3), eye)
