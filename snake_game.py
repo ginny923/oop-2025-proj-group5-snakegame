@@ -309,6 +309,12 @@ class SnakeGame:
         self.waiting_start = True  # 等待玩家第一次按鍵才開始動
         self.two_player_mode = False  # 雙人模式旗標
 
+        if self.two_player_mode:
+            # 初始化第二條蛇的位置
+            self.snake2 = [(5, 5), (4, 5), (3, 5)]
+            self.direction2 = (1, 0)
+            self.pending_growth2 = 0
+            self.score2 = 0
 
 
     # ────────────────────────────────────────────────
