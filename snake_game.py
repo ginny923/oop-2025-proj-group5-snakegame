@@ -364,9 +364,16 @@ class SnakeGame:
         dx, dy = self.direction
         nx, ny = hx+dx, hy+dy
 
-        # 邊界處理：隨機傳送
-        if not (0 <= nx < GRID_W and 0 <= ny < GRID_H):
-            nx, ny = self.random_edge_position()
+        # 邊界處理：對側傳送
+        if nx < 0:
+            nx = GRID_W - 1
+        elif nx >= GRID_W:
+            nx = 0
+        if ny < 0:
+            ny = GRID_H - 1
+        elif ny >= GRID_H:
+            ny = 0
+
 
         new_head = (nx, ny)
 
