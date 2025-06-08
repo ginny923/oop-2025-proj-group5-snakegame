@@ -154,13 +154,6 @@ class SnakeGame:
             pygame.time.set_timer(MOVE_BOMBS, BOMB_MOVE_INTERVAL)
             pygame.time.set_timer(SPAWN_FAKE_FOOD, 5000)
 
-        self.fake_food = set()
-        self.invisible_obstacles = set()
-        if BOSS_MODE:
-            self.invisible_obstacles = set(random.sample(available, 8))
-
-
-
         # 一律設定的固定計時器
         pygame.time.set_timer(SPAWN_FOOD, NEW_FOOD_EVENT_MS)
         pygame.time.set_timer(SPAWN_BOOST, BOOST_EVENT_MS)
@@ -282,6 +275,16 @@ class SnakeGame:
         self.boosts = set()
 
         self.confuses = set()
+
+        # Boss 模式才需要生成 fake_food 和 invisible_obstacles
+        self.fake_food = set()
+        self.invisible_obstacles = set()
+        if BOSS_MODE:
+            # 確保障礙與食物設好後再額外取
+            remaining = list(set(available) - set(sampled[:total_needed]))
+            if len(remaining) >= 8:
+                self.invisible_obstacles = set(random.sample(remaining, 8))
+
 
         # 重設速度
         self.base_fps = FPS_BASE
@@ -515,7 +518,9 @@ class SnakeGame:
             return
 
     def save_score(self, name, score, level):
-        filename = f"scores_level{level}.txt"
+        mode_tag = "_boss" if BOSS_MODE else ""
+        filename = f"scores_level{level}{mode_tag}.txt"
+
         scores = self.load_scores(level, full=True)  # ← 這裡要有縮排
 
         updated = False
@@ -535,7 +540,9 @@ class SnakeGame:
                 f.write(f"{n},{s}\n")
 
     def load_scores(self, level, full=False):
-        filename = f"scores_level{level}.txt"
+        mode_tag = "_boss" if BOSS_MODE else ""
+        filename = f"scores_level{level}{mode_tag}.txt"
+
         scores = []
         try:
             with open(filename, "r", encoding="utf-8") as f:
@@ -550,7 +557,9 @@ class SnakeGame:
     def show_leaderboard(self):
         scores = self.load_scores(self.difficulty)
         self.screen.fill(C_BG)
-        title = self.font.render(f"Leaderboard - Level {self.difficulty}", True, C_TEXT)
+        mode_name = "Boss Mode" if BOSS_MODE else f"Level {self.difficulty}"
+        title = self.font.render(f"Leaderboard – {mode_name}", True, C_TEXT)
+
         self.screen.blit(title, ((WINDOW_W - title.get_width()) // 2, 50))
 
         if not scores:
