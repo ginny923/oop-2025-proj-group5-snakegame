@@ -147,6 +147,18 @@ class SnakeGame:
 
         if self.difficulty >= 2:
             pygame.time.set_timer(SPAWN_CONFUSE, CONFUSE_INTERVAL)
+        
+        # 初始化 Boss 計時器
+        if BOSS_MODE:
+            pygame.time.set_timer(pygame.USEREVENT + 9, BOSS_SHRINK_INTERVAL)
+            pygame.time.set_timer(MOVE_BOMBS, BOMB_MOVE_INTERVAL)
+            pygame.time.set_timer(SPAWN_FAKE_FOOD, 5000)
+
+        self.fake_food = set()
+        self.invisible_obstacles = set()
+        if BOSS_MODE:
+            self.invisible_obstacles = set(random.sample(available, 8))
+
 
 
         # 一律設定的固定計時器
