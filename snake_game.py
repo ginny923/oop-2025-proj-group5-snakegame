@@ -1,6 +1,9 @@
 import sys
 import random
 import pygame
+import intro_screen
+
+
 
 """
 Snake Game (Pygame) – 難度 + 隨機加速道具 + 隨機邊界傳送
@@ -115,6 +118,8 @@ class SnakeGame:
         self.clock = pygame.time.Clock()
         self.font  = pygame.font.SysFont("Noto Sans CJK TC", 20)
         self.small_font = pygame.font.SysFont("Noto Sans CJK TC", 14)
+
+        intro_screen.show_intro(self.screen, self.font)
 
         self.difficulty = self.choose_difficulty()
         self.show_level_info(self.difficulty)
