@@ -116,8 +116,8 @@ class SnakeGame:
         self.screen = pygame.display.set_mode((WINDOW_W, WINDOW_H))
         pygame.display.set_caption("Snake Game – Plus Mode")
         self.clock = pygame.time.Clock()
-        self.font  = pygame.font.SysFont("Noto Sans CJK TC", 20)
-        self.small_font = pygame.font.SysFont("Noto Sans CJK TC", 14)
+        self.font  = pygame.font.SysFont("Courier New", 28)
+        self.small_font = pygame.font.SysFont("Courier New", 18)
 
         intro_screen.show_intro(self.screen, self.font)
 
@@ -224,44 +224,44 @@ class SnakeGame:
 
         # 設定說明內容與對應圖示代號（用文字標記圖形種類）
         if level == 1:
-            title = "Level 1 – 普通模式"
+            title = "Level 1 – Normal Mode"
             info = [
-            ("wall", "固定障礙物：不能碰撞"),
-            ("food", "食物：吃到會變長，並反轉蛇身方向"),
-            ("boost", "加速道具：吃到後暫時加速"),
-            ("portal", "傳送門：進入後隨機傳到另一邊"),
-            ("border", "撞牆後會從對側邊界傳送出來"),
+            ("wall", "Fixed obstacles: cannot be touched"),
+            ("food", "Food: eat to grow, and the snake reverses direction"),
+            ("boost", "Speed boost: temporarily increases speed"),
+            ("portal", "Portal: teleport to the other side"),
+            ("border", "Border teleport: hitting wall wraps you to opposite edge"),
         ]
         elif level == 2:
-            title = "Level 2 – 障礙物會移動"
+            title = "Level 2 – Moving Obstacles"
             info = [
-            ("wall", "障礙物每 4 秒移動一次"),
-            ("food", "食物較少但固定"),
-            ("boost", "加速道具"),
-            ("portal", "傳送門"),
-            ("confuse", "迷惑道具：方向顛倒 5 秒"),
-            ("bomb", "炸彈：吃到會爆炸，扣除蛇尾長度"),
+            ("wall", "Obstacles move every 4 seconds"),
+            ("food", "Fewer food items, fixed position"),
+            ("boost", "Speed boost"),
+            ("portal", "Portal"),
+            ("confuse", "Confuse item: reverses control for 5 seconds"),
+            ("bomb", "Bomb: causes explosion, shortens snake tail"),
         ]
         elif BOSS_MODE:
-            title = "Boss Mode – 魔王生存模式"
+            title = "Boss Mode – Survival Challenge"
             info = [
-            ("timer", "每 10 秒自動縮短蛇身"),
-            ("fake", "假食物：吃到扣長度"),
-            ("invisible", "隱形障礙：碰到立即死亡"),
-            ("bomb", "炸彈"),
-            ("boost", "加速道具"),
-            ("confuse", "迷惑道具"),
-            ("portal", "傳送門"),
+            ("timer", "Snake shrinks automatically every 10 seconds"),
+            ("fake", "Fake food: reduces snake length when eaten"),
+            ("invisible", "Invisible obstacles: instant death on collision"),
+            ("bomb", "Bomb"),
+            ("boost", "Speed boost"),
+            ("confuse", "Confuse item"),
+            ("portal", "Portal"),
         ]
         else:
-            title = "Level 3 – 全面混亂模式"
+            title = "Level 3 – Full Chaos Mode"
             info = [
-            ("wall", "障礙與食物會定時移動"),
-            ("food", "食物數量減少"),
-            ("bomb", "炸彈"),
-            ("boost", "加速道具"),
-            ("confuse", "迷惑道具"),
-            ("portal", "傳送門：多組"),
+            ("wall", "Obstacles and food move periodically"),
+            ("food", "Fewer food items"),
+            ("bomb", "Bomb"),
+            ("boost", "Speed boost"),
+            ("confuse", "Confuse item"),
+            ("portal", "Portal: multiple pairs"),
         ]
 
         # 畫標題
@@ -277,7 +277,7 @@ class SnakeGame:
             self.screen.blit(text_surface, (70, y))
 
         # 提示
-        tip = self.small_font.render("請按 Enter 鍵繼續...", True, C_MENU)
+        tip = self.small_font.render("Press enter to continue...", True, C_MENU)
         self.screen.blit(tip, ((WINDOW_W - tip.get_width()) // 2, y + 50))
 
         pygame.display.flip()

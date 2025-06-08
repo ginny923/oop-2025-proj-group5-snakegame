@@ -1,5 +1,5 @@
+lolo,21
 l,5
 lo,5
-lolo,4
 dua,4
 LOLO,2
