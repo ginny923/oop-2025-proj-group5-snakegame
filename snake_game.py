@@ -75,7 +75,6 @@ C_MENU     = (180, 180, 180)
 C_SNAKE_CONFUSE = (100, 100, 255)  # 混亂狀態下的蛇色（藍紫色）
 C_FAKE_FOOD = (50, 50, 50)
 C_FAKE_OBST = (80, 80, 80)
-C_SNAKE2 = (100, 100, 255)  # 第二位玩家蛇的顏色
 
 PORTAL_COLORS = [
     (0, 255, 255),  # 青藍
@@ -109,7 +108,6 @@ class SnakeGame:
     def __init__(self):
         self.waiting_start = True
         self.paused = False
-        self.two_player_mode = False  # 雙人模式旗標
 
         pygame.init()
         self.screen = pygame.display.set_mode((WINDOW_W, WINDOW_H))
@@ -156,6 +154,11 @@ class SnakeGame:
             pygame.time.set_timer(MOVE_BOMBS, BOMB_MOVE_INTERVAL)
             pygame.time.set_timer(SPAWN_FAKE_FOOD, 5000)
 
+        self.fake_food = set()
+        self.invisible_obstacles = set()
+
+
+
         # 一律設定的固定計時器
         pygame.time.set_timer(SPAWN_FOOD, NEW_FOOD_EVENT_MS)
         pygame.time.set_timer(SPAWN_BOOST, BOOST_EVENT_MS)
@@ -190,7 +193,7 @@ class SnakeGame:
 
     def choose_difficulty(self):
         title = self.font.render("Select Difficulty", True, C_MENU)
-        opts  = ["Level 1", "Level 2 ", "Level 3", "Boss Mode", "Two Player Mode"]
+        opts  = ["Level 1", "Level 2 ", "Level 3", "Boss Mode"]
         while True:
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
@@ -203,15 +206,14 @@ class SnakeGame:
                         global BOSS_MODE
                         BOSS_MODE = True
                         return 3
-                    if e.key in (pygame.K_5, pygame.K_KP5):
-                        self.two_player_mode = True
-                        return 1  # 使用普通模式的難度參數
             self.screen.fill(C_BG)
             self.screen.blit(title, ((WINDOW_W-title.get_width())//2, 80))
             for i, txt in enumerate(opts):
                 label = self.font.render(txt, True, C_MENU)
                 self.screen.blit(label, (WINDOW_W//2-110, 150+i*40))
             pygame.display.flip(); self.clock.tick(15)
+
+
 
     # ────────────────────────────────────────────────
     # 初始化 / 重開
@@ -254,8 +256,6 @@ class SnakeGame:
         self.pending_growth = 0
         self.age = 0
         self.game_over = False
-
-
 
         # 建立保護區域（蛇頭、身體、頭前一步）
         protect_area = set(self.snake)
@@ -308,14 +308,6 @@ class SnakeGame:
         pygame.display.flip()  # ✅ 顯示畫面更新
 
         self.waiting_start = True  # 等待玩家第一次按鍵才開始動
-        self.two_player_mode = False  # 雙人模式旗標
-
-        if self.two_player_mode:
-            # 初始化第二條蛇的位置
-            self.snake2 = [(5, 5), (4, 5), (3, 5)]
-            self.direction2 = (1, 0)
-            self.pending_growth2 = 0
-            self.score2 = 0
 
 
     # ────────────────────────────────────────────────
@@ -333,13 +325,6 @@ class SnakeGame:
     # 事件處理
     # ────────────────────────────────────────────────
     def handle_events(self):
-
-        PLAYER2_DIRS = {
-            pygame.K_w: (0, -1),
-            pygame.K_s: (0, 1),
-            pygame.K_a: (-1, 0),
-            pygame.K_d: (1, 0),
-        }
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -362,12 +347,6 @@ class SnakeGame:
                     if self.waiting_start or (nd[0] != -self.direction[0] or nd[1] != -self.direction[1]):
                         self.direction = nd
                         self.waiting_start = False
-
-                # ✅ 玩家二的方向變更 ← 就加在這邊！
-                if self.two_player_mode and e.key in PLAYER2_DIRS:
-                    nd2 = PLAYER2_DIRS[e.key]
-                    if nd2[0] != -self.direction2[0] or nd2[1] != -self.direction2[1]:
-                        self.direction2 = nd2
 
 
                 if self.game_over and e.key == pygame.K_r:
@@ -410,65 +389,9 @@ class SnakeGame:
     # ────────────────────────────────────────────────
     # 核心更新
     # ────────────────────────────────────────────────
-    def update_player1(self):
-        if self.waiting_start:
-            return
-
-        self.age += 1
-        hx, hy = self.snake1[0]
-        dx, dy = self.direction1
-        nx, ny = (hx + dx) % GRID_W, (hy + dy) % GRID_H
-        new_head = (nx, ny)
-
-        # 碰撞判斷（障礙物 or 自己 or 對方）
-        if new_head in self.obstacles or new_head in self.snake1[1:] or new_head in self.snake2:
-            self.game_over = True
-            self.save_score(self.player_name, len(self.snake1), self.difficulty)
-            return
-
-        # 食物
-        if new_head in self.food:
-            self.food.remove(new_head)
-            self.pending_growth1 += 1
-
-        self.snake1.insert(0, new_head)
-        if self.pending_growth1 > 0:
-            self.pending_growth1 -= 1
-        else:
-            self.snake1.pop()
-
-
-    def update_player2(self):
-        if self.waiting_start:
-            return
-
-        hx, hy = self.snake2[0]
-        dx, dy = self.direction2
-        nx, ny = (hx + dx) % GRID_W, (hy + dy) % GRID_H
-        new_head = (nx, ny)
-
-        if new_head in self.obstacles or new_head in self.snake2[1:] or new_head in self.snake1:
-            self.game_over = True
-            self.save_score(self.player_name2, len(self.snake2), self.difficulty)
-            return
-
-        if new_head in self.food:
-            self.food.remove(new_head)
-            self.pending_growth2 += 1
-
-        self.snake2.insert(0, new_head)
-        if self.pending_growth2 > 0:
-            self.pending_growth2 -= 1
-        else:
-            self.snake2.pop()
 
     def update(self):
-        if self.two_player_mode:
-            self.update_player1()
-            self.update_player2()
-            return
-
-
+        
         if self.waiting_start:
             return  # 還沒按鍵，不更新位置
 
@@ -531,7 +454,9 @@ class SnakeGame:
             idx = self.snake.index(new_head)
             self.snake = self.snake[idx:]
             self.save_score(self.player_name, len(self.snake), self.difficulty)
-        
+            self.game_over = True
+            return
+              
         if new_head in self.bombs:
             self.bombs.remove(new_head)
 
@@ -598,7 +523,7 @@ class SnakeGame:
             self.save_score(self.player_name, len(self.snake), self.difficulty)
             return
 
-    def save_score(self, name, score, level):
+    def save_score(self, name, score, level, two_player=False):
         mode_tag = "_boss" if BOSS_MODE else ""
         filename = f"scores_level{level}{mode_tag}.txt"
 
@@ -627,13 +552,13 @@ class SnakeGame:
         scores = []
         try:
             with open(filename, "r", encoding="utf-8") as f:
-                for line in f:
-                    name, sc = line.strip().split(",")
-                    scores.append((name, int(sc)))
+                lines = f.readlines()
+                scores = [tuple(line.strip().split(",")) for line in lines]
+                scores = [(name, int(score)) for name, score in scores]
+                return scores if full else scores[:5]
         except FileNotFoundError:
-            pass
-        scores.sort(key=lambda x: x[1], reverse=True)
-        return scores if full else scores[:5]
+            return []
+
 
     def show_leaderboard(self):
         scores = self.load_scores(self.difficulty)
@@ -767,42 +692,15 @@ class SnakeGame:
                 pygame.draw.circle(self.screen, C_BG, (rect.x+CELL_SIZE//3, rect.y+CELL_SIZE//3), eye)
                 pygame.draw.circle(self.screen, C_BG, (rect.x+2*CELL_SIZE//3, rect.y+CELL_SIZE//3), eye)
 
-        # 玩家 2 的蛇（若是雙人模式）
-        if self.two_player_mode:
-            for i, (sx, sy) in enumerate(self.snake2):
-                rect = pygame.Rect(sx*CELL_SIZE, sy*CELL_SIZE+SCOREBAR_H, CELL_SIZE, CELL_SIZE)
-                pygame.draw.rect(self.screen, C_SNAKE2, rect)
-                if i==0:
-                    eye = CELL_SIZE//5
-                    pygame.draw.circle(self.screen, C_BG, (rect.x+CELL_SIZE//3, rect.y+CELL_SIZE//3), eye)
-                    pygame.draw.circle(self.screen, C_BG, (rect.x+2*CELL_SIZE//3, rect.y+CELL_SIZE//3), eye)
-
-
+    
         # Info
         info = f"Len {len(self.snake)}  FPS {self.fps}  D{self.difficulty}"
         if self.boost_remaining > 0: info += " BOOST"
         self.screen.blit(self.font.render(info, True, C_TEXT), (10, 10))
 
-        info = f"P1 Len {len(self.snake)}  P2 Len {len(self.snake2)}  FPS {self.fps}  D{self.difficulty}" \
-            if self.two_player_mode else \
-            f"Len {len(self.snake)}  FPS {self.fps}  D{self.difficulty}"
-
-
         if self.game_over:
-            if self.two_player_mode:
-                if len(self.snake) > len(self.snake2):
-                    winner = "P1"
-                elif len(self.snake2) > len(self.snake):
-                    winner = "P2"
-                else:
-                    winner = "Tie"
-                msg_text = f"{winner} WINS! Press Y to replay" if winner != "Tie" else "It's a tie! Press Y to replay"
-            else:
-                msg_text = "GAME OVER – Play again? (Y/N)"
-
-            msg = self.font.render(msg_text, True, C_GAMEOVER)
+            msg = self.font.render("GAME OVER – Play again? (Y/N)", True, C_GAMEOVER)
             self.screen.blit(msg, ((WINDOW_W - msg.get_width()) // 2, WINDOW_H // 2))
-
             pygame.display.flip()
 
             waiting = True
