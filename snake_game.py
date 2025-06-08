@@ -358,6 +358,14 @@ class SnakeGame:
                 self.relocate_obstacles()
             if e.type == MOVE_FOODS and not self.game_over:
                 self.relocate_foods()
+            if e.type == SPAWN_FAKE_FOOD and BOSS_MODE and not self.game_over:
+                self.spawn_fake_food()
+            if e.type == MOVE_BOMBS and BOSS_MODE and not self.game_over:
+                self.relocate_bombs()
+            if e.type == pygame.USEREVENT + 9 and BOSS_MODE and not self.game_over:
+                if len(self.snake) > 1:
+                    self.snake.pop()
+
 
     def flash_explosion(self, times=3, interval=100):
         for _ in range(times):
