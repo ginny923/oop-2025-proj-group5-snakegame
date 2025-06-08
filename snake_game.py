@@ -40,7 +40,12 @@ SPAWN_BOMB = pygame.USEREVENT + 5
 C_BOMB = (139, 0, 0)
 BOMB_EFFECT = 3  # 被扣掉的長度
 CONFUSE_INTERVAL  = 12000          # 每 12 秒嘗試產生一個迷惑道具
-
+# 新增 Boss 模式參數
+BOSS_MODE = False
+BOSS_SHRINK_INTERVAL = 10000  # 每 10 秒減 1 格
+BOMB_MOVE_INTERVAL = 3000     # 每 3 秒移動炸彈
+SPAWN_FAKE_FOOD = pygame.USEREVENT + 7
+MOVE_BOMBS = pygame.USEREVENT + 8
 
 
 # 難度 (障礙刷新 ms, 食物刷新 ms)
@@ -68,6 +73,8 @@ C_TEXT     = (255, 255, 255)
 C_GAMEOVER = (255, 80, 80)
 C_MENU     = (180, 180, 180)
 C_SNAKE_CONFUSE = (100, 100, 255)  # 混亂狀態下的蛇色（藍紫色）
+C_FAKE_FOOD = (50, 50, 50)
+C_FAKE_OBST = (80, 80, 80)
 
 PORTAL_COLORS = [
     (0, 255, 255),  # 青藍
@@ -176,7 +183,7 @@ class SnakeGame:
 
     def choose_difficulty(self):
         title = self.font.render("Select Difficulty", True, C_MENU)
-        opts  = ["Level 1", "Level 2 ", "Level 3"]
+        opts  = ["Level 1", "Level 2 ", "Level 3", "Boss Mode"]
         while True:
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
@@ -185,6 +192,10 @@ class SnakeGame:
                     if e.key in (pygame.K_1, pygame.K_KP1): return 1
                     if e.key in (pygame.K_2, pygame.K_KP2): return 2
                     if e.key in (pygame.K_3, pygame.K_KP3): return 3
+                    if e.key in (pygame.K_4, pygame.K_KP4):
+                        global BOSS_MODE
+                        BOSS_MODE = True
+                        return 3
             self.screen.fill(C_BG)
             self.screen.blit(title, ((WINDOW_W-title.get_width())//2, 80))
             for i, txt in enumerate(opts):
