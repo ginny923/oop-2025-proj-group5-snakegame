@@ -409,7 +409,63 @@ class SnakeGame:
     # ────────────────────────────────────────────────
     # 核心更新
     # ────────────────────────────────────────────────
+    def update_player1(self):
+        if self.waiting_start:
+            return
+
+        self.age += 1
+        hx, hy = self.snake1[0]
+        dx, dy = self.direction1
+        nx, ny = (hx + dx) % GRID_W, (hy + dy) % GRID_H
+        new_head = (nx, ny)
+
+        # 碰撞判斷（障礙物 or 自己 or 對方）
+        if new_head in self.obstacles or new_head in self.snake1[1:] or new_head in self.snake2:
+            self.game_over = True
+            self.save_score(self.player_name, len(self.snake1), self.difficulty)
+            return
+
+        # 食物
+        if new_head in self.food:
+            self.food.remove(new_head)
+            self.pending_growth1 += 1
+
+        self.snake1.insert(0, new_head)
+        if self.pending_growth1 > 0:
+            self.pending_growth1 -= 1
+        else:
+            self.snake1.pop()
+
+
+    def update_player2(self):
+        if self.waiting_start:
+            return
+
+        hx, hy = self.snake2[0]
+        dx, dy = self.direction2
+        nx, ny = (hx + dx) % GRID_W, (hy + dy) % GRID_H
+        new_head = (nx, ny)
+
+        if new_head in self.obstacles or new_head in self.snake2[1:] or new_head in self.snake1:
+            self.game_over = True
+            self.save_score(self.player_name2, len(self.snake2), self.difficulty)
+            return
+
+        if new_head in self.food:
+            self.food.remove(new_head)
+            self.pending_growth2 += 1
+
+        self.snake2.insert(0, new_head)
+        if self.pending_growth2 > 0:
+            self.pending_growth2 -= 1
+        else:
+            self.snake2.pop()
+
     def update(self):
+        if self.two_player_mode:
+            self.update_player1()
+            self.update_player2()
+            return
 
 
         if self.waiting_start:
