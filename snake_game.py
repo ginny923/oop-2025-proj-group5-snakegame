@@ -92,6 +92,7 @@ C_CONFUSE = (100, 100, 255)  # 淡藍紫
 class SnakeGame:
     def __init__(self):
         self.waiting_start = True
+        self.paused = False
 
         pygame.init()
         self.screen = pygame.display.set_mode((WINDOW_W, WINDOW_H))
@@ -254,6 +255,11 @@ class SnakeGame:
 
         # ✅ 馬上顯示遊戲畫面（不會卡在 loading）
         self.render()
+
+        if self.paused and not self.game_over:
+            pause_msg = self.font.render("PAUSED – Press P to resume", True, C_MENU)
+            self.screen.blit(pause_msg, ((WINDOW_W - pause_msg.get_width()) // 2, WINDOW_H // 2))
+
         pygame.display.flip()  # ✅ 顯示畫面更新
 
         self.waiting_start = True  # 等待玩家第一次按鍵才開始動
@@ -266,7 +272,7 @@ class SnakeGame:
     def run(self):
         while True:
             self.handle_events()
-            if not self.game_over:
+            if not self.game_over and not self.paused:
                 self.update()
             self.render()
             self.clock.tick(self.fps)
@@ -282,6 +288,10 @@ class SnakeGame:
             if e.type == pygame.KEYDOWN:
                 if e.key == pygame.K_ESCAPE:
                     pygame.quit(); sys.exit()
+
+                if e.key == pygame.K_p:
+                    self.paused = not self.paused
+
                 if e.key in DIRS:
                     nd = DIRS[e.key]
 
