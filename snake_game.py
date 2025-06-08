@@ -108,6 +108,7 @@ class SnakeGame:
     def __init__(self):
         self.waiting_start = True
         self.paused = False
+        self.two_player_mode = False  # 雙人模式旗標
 
         pygame.init()
         self.screen = pygame.display.set_mode((WINDOW_W, WINDOW_H))
@@ -188,7 +189,7 @@ class SnakeGame:
 
     def choose_difficulty(self):
         title = self.font.render("Select Difficulty", True, C_MENU)
-        opts  = ["Level 1", "Level 2 ", "Level 3", "Boss Mode"]
+        opts  = ["Level 1", "Level 2 ", "Level 3", "Boss Mode", "Two Player Mode"]
         while True:
             for e in pygame.event.get():
                 if e.type == pygame.QUIT:
@@ -201,6 +202,9 @@ class SnakeGame:
                         global BOSS_MODE
                         BOSS_MODE = True
                         return 3
+                    if e.key in (pygame.K_5, pygame.K_KP5):
+                        self.two_player_mode = True
+                        return 1  # 使用普通模式的難度參數
             self.screen.fill(C_BG)
             self.screen.blit(title, ((WINDOW_W-title.get_width())//2, 80))
             for i, txt in enumerate(opts):
@@ -303,6 +307,7 @@ class SnakeGame:
         pygame.display.flip()  # ✅ 顯示畫面更新
 
         self.waiting_start = True  # 等待玩家第一次按鍵才開始動
+        self.two_player_mode = False  # 雙人模式旗標
 
 
 
