@@ -333,6 +333,13 @@ class SnakeGame:
     # ────────────────────────────────────────────────
     def handle_events(self):
 
+        PLAYER2_DIRS = {
+            pygame.K_w: (0, -1),
+            pygame.K_s: (0, 1),
+            pygame.K_a: (-1, 0),
+            pygame.K_d: (1, 0),
+        }
+
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 pygame.quit(); sys.exit()
@@ -354,6 +361,12 @@ class SnakeGame:
                     if self.waiting_start or (nd[0] != -self.direction[0] or nd[1] != -self.direction[1]):
                         self.direction = nd
                         self.waiting_start = False
+
+                # ✅ 玩家二的方向變更 ← 就加在這邊！
+                if self.two_player_mode and e.key in PLAYER2_DIRS:
+                    nd2 = PLAYER2_DIRS[e.key]
+                    if nd2[0] != -self.direction2[0] or nd2[1] != -self.direction2[1]:
+                        self.direction2 = nd2
 
 
                 if self.game_over and e.key == pygame.K_r:
