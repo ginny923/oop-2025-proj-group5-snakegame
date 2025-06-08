@@ -106,6 +106,7 @@ class SnakeGame:
         pygame.display.set_caption("Snake Game – Plus Mode")
         self.clock = pygame.time.Clock()
         self.font  = pygame.font.SysFont("consolas", 20)
+        self.small_font = pygame.font.SysFont("consolas", 14)
 
         self.difficulty = self.choose_difficulty()
         self.player_name = self.get_player_name()
@@ -551,16 +552,23 @@ class SnakeGame:
             fuse_end = (center[0], center[1] - CELL_SIZE // 2 - 3)
             pygame.draw.line(self.screen, (0, 0, 0), fuse_start, fuse_end, 2)
 
-        # 傳送門（每對一色）
+        # 傳送門（每對一色 + 編號）
         for i in range(0, len(self.portals), 2):
-            color = PORTAL_COLORS[(i//2) % len(PORTAL_COLORS)]  # 取對應顏色
-            for j in (0, 1):  # 這對的兩個門
+            color = PORTAL_COLORS[(i//2) % len(PORTAL_COLORS)]
+            label = self.small_font.render(str(i//2 + 1), True, color)
+
+            for j in (0, 1):
                 px, py = self.portals[i + j]
                 center = (px * CELL_SIZE + CELL_SIZE // 2, py * CELL_SIZE + SCOREBAR_H + CELL_SIZE // 2)
-        
-                # 閃爍感 – 隨時間閃動外圈厚度
+
+                # 閃爍感 – 可選厚度切換
                 thickness = 2 + (self.age // 5) % 2
                 pygame.draw.circle(self.screen, color, center, CELL_SIZE // 2 - 1, thickness)
+
+                # 編號放在門的右下角
+                text_x = center[0] + CELL_SIZE // 2 - 5
+                text_y = center[1] + CELL_SIZE // 2 - 5
+                self.screen.blit(label, (text_x, text_y))
 
 
         # 障礙
