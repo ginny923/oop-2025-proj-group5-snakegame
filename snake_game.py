@@ -740,6 +740,12 @@ class SnakeGame:
         if len(candidates) >= total_needed:
             self.portals = random.sample(candidates, total_needed)
 
+    def spawn_fake_food(self):
+        for _ in range(1000):
+            p = (random.randint(0, GRID_W-1), random.randint(0, GRID_H-1))
+            if p not in self.snake and p not in self.obstacles and p not in self.food and p not in self.fake_food:
+                self.fake_food.add(p)
+                return
 
     def random_edge_position(self):
         side = random.choice(["top", "bottom", "left", "right"])
