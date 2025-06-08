@@ -309,9 +309,10 @@ class SnakeGame:
                 if e.key in DIRS:
                     nd = DIRS[e.key]
 
-                    # 🌀 如果進入混亂狀態，左右反轉
+                    # 🌀 如果進入混亂狀態，上下左右全部反轉
                     if self.confuse_remaining > 0:
-                        nd = (-nd[0], nd[1]) if nd[0] != 0 else nd
+                        nd = (-nd[0], -nd[1])
+
 
                     if self.waiting_start or (nd[0] != -self.direction[0] or nd[1] != -self.direction[1]):
                         self.direction = nd
