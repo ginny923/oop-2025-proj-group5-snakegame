@@ -381,6 +381,21 @@ class SnakeGame:
 
         new_head = (nx, ny)
 
+        # 傳送門處理：進入後立即傳送到另一邊
+        if new_head in self.portals:
+            idx = self.portals.index(new_head)
+            other_idx = 1 - idx
+            new_head = self.portals[other_idx]
+
+            # 移動蛇：直接從出口出現（跳過一般移動流程）
+            self.snake.insert(0, new_head)
+            if self.pending_growth:
+                self.pending_growth -= 1
+            else:
+                self.snake.pop()
+
+            return  # ✅ 傳送完直接結束 update（不再檢查碰撞）
+
         # 碰撞
         if new_head in self.obstacles:
             self.game_over = True; 
