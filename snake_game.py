@@ -506,7 +506,6 @@ class SnakeGame:
             self.save_score(self.player_name, len(self.snake), self.difficulty)
             return
 
-
     def save_score(self, name, score, level):
         filename = f"scores_level{level}.txt"
         scores = self.load_scores(level, full=True)  # ← 這裡要有縮排
@@ -610,6 +609,13 @@ class SnakeGame:
                 text_y = center[1] + CELL_SIZE // 2 - 5
                 self.screen.blit(label, (text_x, text_y))
 
+        # render 中畫出 fake food 和隱形障礙
+        for fx, fy in self.fake_food:
+            center = (fx*CELL_SIZE + CELL_SIZE//2, fy*CELL_SIZE + SCOREBAR_H + CELL_SIZE//2)
+            pygame.draw.circle(self.screen, C_FAKE_FOOD, center, CELL_SIZE//2 - 1)
+        for ox, oy in self.invisible_obstacles:
+            rect = pygame.Rect(ox*CELL_SIZE, oy*CELL_SIZE+SCOREBAR_H, CELL_SIZE, CELL_SIZE)
+            pygame.draw.rect(self.screen, C_FAKE_OBST, rect, 1)
 
         # 障礙
         for ox, oy in self.obstacles:
