@@ -75,6 +75,7 @@ C_MENU     = (180, 180, 180)
 C_SNAKE_CONFUSE = (100, 100, 255)  # 混亂狀態下的蛇色（藍紫色）
 C_FAKE_FOOD = (50, 50, 50)
 C_FAKE_OBST = (80, 80, 80)
+C_SNAKE2 = (100, 100, 255)  # 第二位玩家蛇的顏色
 
 PORTAL_COLORS = [
     (0, 255, 255),  # 青藍
@@ -766,14 +767,42 @@ class SnakeGame:
                 pygame.draw.circle(self.screen, C_BG, (rect.x+CELL_SIZE//3, rect.y+CELL_SIZE//3), eye)
                 pygame.draw.circle(self.screen, C_BG, (rect.x+2*CELL_SIZE//3, rect.y+CELL_SIZE//3), eye)
 
+        # 玩家 2 的蛇（若是雙人模式）
+        if self.two_player_mode:
+            for i, (sx, sy) in enumerate(self.snake2):
+                rect = pygame.Rect(sx*CELL_SIZE, sy*CELL_SIZE+SCOREBAR_H, CELL_SIZE, CELL_SIZE)
+                pygame.draw.rect(self.screen, C_SNAKE2, rect)
+                if i==0:
+                    eye = CELL_SIZE//5
+                    pygame.draw.circle(self.screen, C_BG, (rect.x+CELL_SIZE//3, rect.y+CELL_SIZE//3), eye)
+                    pygame.draw.circle(self.screen, C_BG, (rect.x+2*CELL_SIZE//3, rect.y+CELL_SIZE//3), eye)
+
+
         # Info
         info = f"Len {len(self.snake)}  FPS {self.fps}  D{self.difficulty}"
         if self.boost_remaining > 0: info += " BOOST"
         self.screen.blit(self.font.render(info, True, C_TEXT), (10, 10))
 
+        info = f"P1 Len {len(self.snake)}  P2 Len {len(self.snake2)}  FPS {self.fps}  D{self.difficulty}" \
+            if self.two_player_mode else \
+            f"Len {len(self.snake)}  FPS {self.fps}  D{self.difficulty}"
+
+
         if self.game_over:
-            msg = self.font.render("GAME OVER – Play again? (Y/N)", True, C_GAMEOVER)
+            if self.two_player_mode:
+                if len(self.snake) > len(self.snake2):
+                    winner = "P1"
+                elif len(self.snake2) > len(self.snake):
+                    winner = "P2"
+                else:
+                    winner = "Tie"
+                msg_text = f"{winner} WINS! Press Y to replay" if winner != "Tie" else "It's a tie! Press Y to replay"
+            else:
+                msg_text = "GAME OVER – Play again? (Y/N)"
+
+            msg = self.font.render(msg_text, True, C_GAMEOVER)
             self.screen.blit(msg, ((WINDOW_W - msg.get_width()) // 2, WINDOW_H // 2))
+
             pygame.display.flip()
 
             waiting = True
