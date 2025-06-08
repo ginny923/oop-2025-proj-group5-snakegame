@@ -110,6 +110,8 @@ class SnakeGame:
         self.max_bombs      = settings["bomb_count"]
         self.max_confuses = settings["confuse_count"]
         self.bombs          = set()
+        self.portals = []  # 傳送門位置對
+
 
         # ✅ 現在才開始設 timer 沒問題
         pygame.time.set_timer(SPAWN_BOMB, 8000)
@@ -252,6 +254,8 @@ class SnakeGame:
         self.base_fps = FPS_BASE
         self.fps = FPS_BASE
         self.boost_remaining = 0
+
+        self.spawn_portals()  # ✅ 這裡呼叫剛剛出錯的 spawn_portals
 
         # ✅ 馬上顯示遊戲畫面（不會卡在 loading）
         self.render()
@@ -421,7 +425,20 @@ class SnakeGame:
             self.boosts.remove(new_head)
             self.boost_remaining = BOOST_DURATION
             self.fps = self.base_fps + BOOST_FPS_INC
+
+        if new_head in self.portals:
+            idx = self.portals.index(new_head)
+            other_idx = 1 - idx  # 兩個門互相傳送
+            new_head = self.portals[other_idx]
+
     
+    def spawn_portals(self):
+        forbidden = set(self.snake) | self.obstacles | self.food | self.boosts | self.bombs | self.confuses
+        all_positions = {(x, y) for x in range(GRID_W) for y in range(GRID_H)}
+        candidates = list(all_positions - forbidden)
+        if len(candidates) >= 2:
+            self.portals = random.sample(candidates, 2)
+
 
     def save_score(self, name, score, level):
         filename = f"scores_level{level}.txt"
@@ -507,6 +524,11 @@ class SnakeGame:
             fuse_start = (center[0], center[1] - CELL_SIZE // 2 + 2)
             fuse_end = (center[0], center[1] - CELL_SIZE // 2 - 3)
             pygame.draw.line(self.screen, (0, 0, 0), fuse_start, fuse_end, 2)
+
+        # 傳送門（藍綠圓圈）
+        for px, py in self.portals:
+            center = (px * CELL_SIZE + CELL_SIZE // 2, py * CELL_SIZE + SCOREBAR_H + CELL_SIZE // 2)
+            pygame.draw.circle(self.screen, (0, 255, 255), center, CELL_SIZE // 2 - 1, 2)
 
 
         # 障礙
